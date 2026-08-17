@@ -5,6 +5,8 @@ import string
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
+from scipy.sparse import issparse
 
 
 FIGURE_SIZES = {
@@ -98,3 +100,72 @@ def save_figure(fig, path, *, formats=("pdf", "svg"), dpi=300,
     if close:
         plt.close(fig)
     return written
+
+
+def _spatial_values(adata, key, spatial_key):
+    if spatial_key not in adata.obsm:
+        raise KeyError(f"adata.obsm[{spatial_key!r}] is required")
+    if key not in adata.obs:
+        raise KeyError(f"adata.obs[{key!r}] is required")
+    return np.asarray(adata.obsm[spatial_key]), adata.obs[key].to_numpy()
+
+
+def plot_region_probability(adata, *, ax=None, spatial_key="spatial", size=8,
+                            cmap="coolwarm", colorbar=True):
+    """Plot the inferred continuous SIGMA region probability."""
+    xy, values = _spatial_values(adata, "sigma_region_probability", spatial_key)
+    ax = ax or plt.subplots(figsize=figure_size("single_square"), constrained_layout=True)[1]
+    points = ax.scatter(xy[:, 0], xy[:, 1], c=values, s=size, cmap=cmap,
+                        vmin=0, vmax=1, linewidths=0, rasterized=True)
+    style_spatial_axis(ax); ax.set_title("SIGMA region probability")
+    if colorbar:
+        ax.figure.colorbar(points, ax=ax, shrink=.78, label="Region probability")
+    return ax
+
+
+def plot_boundary(adata, *, ax=None, spatial_key="spatial", size=8,
+                  boundary_size=10, background="sigma_region_probability"):
+    """Plot SIGMA boundary spots over a continuous result field."""
+    xy, values = _spatial_values(adata, background, spatial_key)
+    if "sigma_boundary" not in adata.obs:
+        raise KeyError("adata.obs['sigma_boundary'] is required")
+    boundary = adata.obs["sigma_boundary"].to_numpy(bool)
+    ax = ax or plt.subplots(figsize=figure_size("single_square"), constrained_layout=True)[1]
+    ax.scatter(xy[:, 0], xy[:, 1], c=values, s=size, cmap="coolwarm",
+               linewidths=0, rasterized=True)
+    ax.scatter(xy[boundary, 0], xy[boundary, 1], s=boundary_size, c="black",
+               linewidths=0, label="SIGMA boundary", rasterized=True)
+    style_spatial_axis(ax); ax.set_title("SIGMA boundary"); ax.legend(frameon=False)
+    return ax
+
+
+def plot_signed_distance(adata, *, ax=None, spatial_key="spatial", size=8,
+                         cmap="coolwarm", colorbar=True):
+    """Plot the signed distance to the inferred SIGMA boundary."""
+    xy, values = _spatial_values(adata, "sigma_d_signed", spatial_key)
+    limit = np.nanmax(np.abs(values))
+    ax = ax or plt.subplots(figsize=figure_size("single_square"), constrained_layout=True)[1]
+    points = ax.scatter(xy[:, 0], xy[:, 1], c=values, s=size, cmap=cmap,
+                        vmin=-limit, vmax=limit, linewidths=0, rasterized=True)
+    style_spatial_axis(ax); ax.set_title("Signed distance")
+    if colorbar:
+        ax.figure.colorbar(points, ax=ax, shrink=.78, label="Signed distance")
+    return ax
+
+
+def plot_interface_feature(adata, feature, *, ax=None, spatial_key="spatial",
+                           layer=None, size=8, cmap="viridis", colorbar=True):
+    """Plot one feature from ``adata.X`` or an explicitly selected layer."""
+    if feature not in adata.var_names:
+        raise KeyError(f"Feature {feature!r} was not found in adata.var_names.")
+    matrix = adata.layers[layer] if layer is not None else adata.X
+    index = int(adata.var_names.get_loc(feature))
+    values = matrix[:, index].toarray().ravel() if issparse(matrix) else np.asarray(matrix[:, index]).ravel()
+    xy = np.asarray(adata.obsm[spatial_key])
+    ax = ax or plt.subplots(figsize=figure_size("single_square"), constrained_layout=True)[1]
+    points = ax.scatter(xy[:, 0], xy[:, 1], c=values, s=size, cmap=cmap,
+                        linewidths=0, rasterized=True)
+    style_spatial_axis(ax); ax.set_title(str(feature))
+    if colorbar:
+        ax.figure.colorbar(points, ax=ax, shrink=.78, label="Intensity")
+    return ax
