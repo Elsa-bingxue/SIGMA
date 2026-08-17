@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sigma-omics"
-version = "0.1.0a1"
-description = "Spatial interface analysis for spatial metabolomics and transcriptomics"
+version = "0.1.1"
+description = "Spectral interface graph modeling for quantitative metabolic field analysis of tumor interfaces"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
@@ -20,14 +20,15 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 dependencies = [
-  "numpy>=1.24",
+  "numpy>=1.24,<2",
   "pandas>=2.0",
   "scipy>=1.10",
   "scikit-learn>=1.3",
   "scanpy>=1.10",
   "anndata>=0.10",
+  "zarr>=2.18,<3",
   "torch>=2.1",
-  "torch-geometric>=2.5",
+  "torch-geometric>=2.5,<2.6",
 ]
 
 [project.optional-dependencies]
