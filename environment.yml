@@ -1,0 +1,21 @@
+name: sigma
+channels:
+  - pytorch
+  - pyg
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - numpy
+  - pandas
+  - scipy
+  - scikit-learn
+  - matplotlib
+  - scanpy
+  - anndata
+  - pytorch
+  - pytorch-geometric
+  - pip
+  - pip:
+      - build
+      - twine
