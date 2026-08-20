@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sigma-omics"
-version = "0.1.1"
+version = "0.2.0"
 description = "Spectral interface graph modeling for quantitative metabolic field analysis of tumor interfaces"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -29,6 +29,8 @@ dependencies = [
   "zarr>=2.18,<3",
   "torch>=2.1",
   "torch-geometric>=2.5,<2.6",
+  "matplotlib>=3.8",
+  "statsmodels>=0.14",
 ]
 
 [project.optional-dependencies]

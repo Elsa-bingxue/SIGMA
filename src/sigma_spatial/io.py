@@ -33,6 +33,7 @@ def load_spatial_metabolomics(
     result = ad.AnnData(matrix.to_numpy(dtype=float))
     result.obs_names = matrix.index.astype(str)
     result.var_names = matrix.columns.astype(str)
+    result.var["feature_type"] = "SM"
     aligned_coordinates = coordinates.loc[matrix.index, [x_column, y_column]]
     result.obsm["spatial"] = aligned_coordinates.to_numpy(dtype=float)
     if anchors_path is not None:
@@ -43,4 +44,15 @@ def load_spatial_metabolomics(
         if len(missing_anchor):
             raise ValueError(f"Anchor table is missing spot IDs: {list(missing_anchor[:5])}.")
         result.obs[anchor_key] = anchors.loc[matrix.index, anchor_column].to_numpy()
+    return result
+
+
+def load_spatial_transcriptomics(
+    matrix_path, coordinates_path, *, x_column="x", y_column="y",
+):
+    """Load a spot-by-gene table and matching coordinates as AnnData."""
+    result = load_spatial_metabolomics(
+        matrix_path, coordinates_path, x_column=x_column, y_column=y_column,
+    )
+    result.var["feature_type"] = "ST"
     return result
