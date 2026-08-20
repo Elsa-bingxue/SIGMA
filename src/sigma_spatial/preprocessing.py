@@ -21,6 +21,48 @@ def get_msi_matrix(adata, layer=None):
     return adata.X
 
 
+def resolve_sm_matrix(adata, matrix_source="X"):
+    """Resolve an explicit SM matrix without silently changing preprocessing.
+
+    Joint objects are subset by ``feature_type``/``type == 'SM'`` before a
+    matrix or layer is selected. ``msi_uns`` is assumed to already be SM-only.
+    """
+    source = str(matrix_source)
+    if source == "msi_uns":
+        if "msi" not in adata.uns:
+            raise KeyError("adata.uns['msi'] is required for matrix_source='msi_uns'")
+        matrix = adata.uns["msi"]
+        if matrix.shape[0] != adata.n_obs:
+            raise ValueError("adata.uns['msi'] has incompatible spot count")
+        names = np.asarray(adata.uns.get("mz_features", [f"mz_{j}" for j in range(matrix.shape[1])])).astype(str)
+        if len(names) != matrix.shape[1]:
+            raise ValueError("adata.uns['mz_features'] does not match adata.uns['msi']")
+        return matrix, names
+    mask = None
+    for key in ("feature_type", "type"):
+        if key in adata.var:
+            candidate = adata.var[key].astype(str).to_numpy() == "SM"
+            if candidate.any():
+                mask = candidate
+                break
+    view = adata[:, mask] if mask is not None else adata
+    if source == "X":
+        matrix = view.X
+    elif source == "raw":
+        if "raw" not in view.layers:
+            raise KeyError("adata.layers['raw'] is required for matrix_source='raw'")
+        matrix = view.layers["raw"]
+    elif source.startswith("layer:"):
+        layer = source.split(":", 1)[1]
+        if layer not in view.layers:
+            raise KeyError(f"adata.layers[{layer!r}] is required")
+        matrix = view.layers[layer]
+    else:
+        raise ValueError("matrix_source must be 'X', 'raw', 'msi_uns', or 'layer:<name>'")
+    names = view.var.get("feature_name", view.var_names.to_series()).astype(str).to_numpy()
+    return matrix, names
+
+
 def msi_to_embedding(x, n_components=64, random_state=0):
     """log1p + robust scaling (dense only) + TruncatedSVD + z-score."""
     max_components = min(x.shape) - 1

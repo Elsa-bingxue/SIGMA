@@ -6,7 +6,21 @@ import numpy as np
 import pytest
 import torch
 
-from sigma_spatial.weak_anchor import run_sigma_weak_anchor, weak_anchor_msi_embedding
+from sigma_spatial.weak_anchor import anchors_from_clusters, run_sigma_weak_anchor, weak_anchor_msi_embedding
+
+
+def test_anchors_from_clusters_preserves_unknowns():
+    clusters = np.array([0, 1, 2, 3, 4])
+    anchors = anchors_from_clusters(
+        clusters, positive_clusters=[1], negative_clusters=[0, 2], uncertain_clusters=[3]
+    )
+    np.testing.assert_equal(anchors[:4], np.array([0.0, 1.0, 0.0, np.nan]))
+    assert np.isnan(anchors[4])
+
+
+def test_anchors_from_clusters_rejects_overlap():
+    with pytest.raises(ValueError, match="disjoint"):
+        anchors_from_clusters([0, 1], positive_clusters=[1], negative_clusters=[1, 0])
 
 
 ROOT = Path(__file__).resolve().parents[2]

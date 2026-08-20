@@ -19,6 +19,34 @@ from .utils import set_seed
 from .validation import validate_sigma_output
 
 
+def anchors_from_clusters(
+    clusters,
+    *,
+    positive_clusters,
+    negative_clusters,
+    uncertain_clusters=(),
+):
+    """Convert user-interpreted spatial clusters into auditable weak anchors.
+
+    The function intentionally uses positive/negative rather than tumor/stroma
+    terminology because cluster-only datasets do not provide pathological
+    ground truth. Unlisted and explicitly uncertain clusters remain NaN.
+    """
+    values = np.asarray(clusters)
+    positive = set(positive_clusters)
+    negative = set(negative_clusters)
+    uncertain = set(uncertain_clusters)
+    overlap = (positive & negative) | (positive & uncertain) | (negative & uncertain)
+    if overlap:
+        raise ValueError(f"Cluster sets must be disjoint; overlap={sorted(overlap, key=str)}")
+    anchors = np.full(len(values), np.nan, dtype=float)
+    anchors[np.isin(values, list(positive))] = 1.0
+    anchors[np.isin(values, list(negative))] = 0.0
+    if not np.any(anchors == 1) or not np.any(anchors == 0):
+        raise ValueError("Cluster mapping must produce at least one positive and one negative anchor.")
+    return anchors
+
+
 def weak_anchor_msi_embedding(matrix, n_components=64, random_state=0, already_log=True):
     """HCC-reference MSI embedding, including its ``already_log`` behavior."""
     limit = min(matrix.shape[0] - 1, matrix.shape[1] - 1)
@@ -93,12 +121,20 @@ def run_sigma_weak_anchor(
     boundary_level=0.5,
     boundary_neighbors=10,
     verbose=False,
+    anchor_mode="unspecified_weak_anchor",
+    anchor_provenance=None,
 ):
     """Run the frozen HCC SM-only weak-anchor workflow.
 
     This function deliberately has no RNA loss. Defaults reproduce the executed
     P1/P4 notebook branch and must be changed explicitly by the caller.
     """
+    allowed_modes = {
+        "unspecified_weak_anchor", "pathology_informed", "cluster_inferred",
+        "transferred_annotation",
+    }
+    if anchor_mode not in allowed_modes:
+        raise ValueError(f"anchor_mode must be one of {sorted(allowed_modes)}")
     _validate_weak_anchor_input(adata, anchor_key, spatial_key)
     set_seed(random_state)
     result = adata.copy() if copy else adata
@@ -202,6 +238,15 @@ def run_sigma_weak_anchor(
         "lambda_supervised": float(lambda_supervised),
         "rna_loss": False,
         "loss_history": loss_history,
+    }
+    result.uns["sigma_anchor_provenance"] = {
+        "mode": anchor_mode,
+        "anchor_key": anchor_key,
+        "positive_label": "positive_cluster_side" if anchor_mode == "cluster_inferred" else "positive_side",
+        "negative_label": "negative_cluster_side" if anchor_mode == "cluster_inferred" else "negative_side",
+        "pathology_annotation": anchor_mode in {"pathology_informed", "transferred_annotation"},
+        "matched_st_required": False,
+        **dict(anchor_provenance or {}),
     }
     validate_sigma_output(result)
     return result

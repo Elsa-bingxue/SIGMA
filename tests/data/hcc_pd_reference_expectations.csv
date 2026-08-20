@@ -1,0 +1,6 @@
+sample,biological_interface,legacy_selected_program,legacy_representative_mz,selection_note
+HCC_P1,tumor--non-tumor,0,213.11;199.10;311.22;593.47;349.20,Legacy q25/q75 signed-distance profiles
+HCC_P4,tumor--non-tumor,1,329.25;349.20;89.02;311.22;344.23,Legacy q25/q75 signed-distance profiles
+HPD_A1,CI--Cd,3,,Legacy side-specific q20/q80 analysis
+HPD_B1,CI--Cd,0,,Legacy side-specific q20/q80 analysis
+HPD_C1,CI--Cd,1,,Legacy side-specific q20/q80 analysis
