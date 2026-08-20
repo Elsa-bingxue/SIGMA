@@ -23,7 +23,7 @@ from .workflows import (
     get_workflow_config, record_workflow_provenance,
 )
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 __all__ = [
     "SIGMA", "run_sigma", "run_analysis", "run_downstream_analysis",
     "AnalysisResult", "DownstreamAnalysis",
