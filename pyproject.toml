@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sigma-omics"
-version = "0.2.0"
-description = "Spectral interface graph modeling for quantitative metabolic field analysis of tumor interfaces"
+version = "0.2.1"
+description = "Interface-aware spectral graph learning of pathological metabolic transitions"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}

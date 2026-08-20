@@ -495,7 +495,7 @@ def run_analysis(
     )
     run_config = {
         "schema_version": 1,
-        "package_version": "0.2.0",
+        "package_version": "0.2.1",
         "workflow": resolved_workflow,
         "core_route": core_route,
         "selection_mode": selection_mode,

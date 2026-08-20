@@ -1,20 +1,18 @@
 # SIGMA (`sigma-omics`)
 
-SIGMA is a spectral interface graph model for quantitative metabolic field
-analysis of tumor interfaces. It constructs a spatial Gaussian graph from
-tissue coordinates, transforms tumor/non-tumor annotations into an
-interface-aware prior field, and decomposes spatial metabolomics
-representations into low-frequency tissue background and high-frequency
-boundary-associated residual components. A spectral residual graph
-convolutional network then learns boundary-enriched metabolic fields under weak
-pathological supervision. Matched spatial transcriptomic profiles can be used
-for auxiliary alignment and biological interpretation but are not required for
-the separate SM-only weak-anchor workflow.
+**SIGMA resolves pathological metabolic transitions with interface-aware
+spectral graph learning.**
 
-SIGMA returns a continuous tumor-associated field, an inferred boundary, and a
-signed-distance coordinate for ranking and quantifying interface-associated
-metabolic features. The scientific definitions and default parameters are
-preserved from the HBC515 and HCC reference implementations.
+SIGMA takes a spatial metabolomics intensity matrix and tissue coordinates as
+its primary inputs. Pathological annotations, transferred labels, or weak
+spatial anchors guide interface inference. Its spectral graph model separates
+low-frequency tissue organization from interface-associated metabolic signals.
+
+Matched spatial transcriptomic data can optionally provide auxiliary molecular
+information and support downstream biological validation and interpretation.
+SIGMA returns an inferred pathological interface, signed-distance coordinates,
+interface-associated metabolic programs, ranked metabolites, influence ranges,
+and directional anisotropy.
 
 ## Install
 
