@@ -16,7 +16,10 @@ def set_seed(seed=0, *, deterministic=True):
     torch.backends.cudnn.deterministic = bool(deterministic)
     torch.backends.cudnn.benchmark = not bool(deterministic)
     if deterministic and hasattr(torch, "use_deterministic_algorithms"):
-        torch.use_deterministic_algorithms(True, warn_only=True)
+        try:
+            torch.use_deterministic_algorithms(True, warn_only=True)
+        except TypeError:  # PyTorch versions before ``warn_only`` was added.
+            torch.use_deterministic_algorithms(True)
     return {
         "random_state": seed,
         "python_seed": seed,

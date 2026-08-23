@@ -92,6 +92,7 @@ def test_run_analysis_routes_precomputed_sigma_from_explicit_evidence(tmp_path, 
     assert result.workflow == "direct_pathology"
     assert result.downstream is expected
     assert captured["selection_mode"] == "lambda_profile"
+    assert captured["program_selection"] == "auto"
     assert captured["report_level"] == "none"
     assert (tmp_path / "sigma_run_config.json").exists()
 

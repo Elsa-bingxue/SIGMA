@@ -81,6 +81,144 @@ def representative_metabolites(assignments, *, cluster=None, n=5, score="r2_logI
     return table.sort_values(order, ascending=False).head(n).copy()
 
 
+def disease_profile_representatives(
+    assignments, *, cluster, n=5, max_lambda_quantile=0.90,
+    min_r2=0.005, min_enrichment=1.01,
+):
+    """Select disease-interface representatives using the original HPD logic.
+
+    Selection is deliberately restricted to the already selected Ward program.
+    Within that program, retain detected negative-slope distance-decay features,
+    remove only the extreme long-lambda tail when enough candidates remain, and
+    rank primarily by robust distance-fit R2 followed by near/far enrichment.
+    No spatial-hotspot or centroid-correlation score is introduced here.
+    """
+    table = assignments[assignments["cluster"].astype(int) == int(cluster)].copy()
+    if table.empty:
+        return table
+
+    enrichment_col = next(
+        (name for name in ("boundary_enrichment_ratio", "interface_enrichment_ratio")
+         if name in table.columns),
+        None,
+    )
+    required = [name for name in ("r2_logI", "slope", enrichment_col) if name]
+    for name in required:
+        table[name] = pd.to_numeric(table[name], errors="coerce")
+    valid = np.isfinite(table["r2_logI"]) & np.isfinite(table["slope"])
+    valid &= table["slope"] < 0
+    valid &= table["r2_logI"] >= float(min_r2)
+    if enrichment_col is not None:
+        valid &= np.isfinite(table[enrichment_col])
+        valid &= table[enrichment_col] >= float(min_enrichment)
+    table = table.loc[valid].copy()
+    if table.empty:
+        return table
+
+    if "lambda" in table.columns:
+        table["lambda"] = pd.to_numeric(table["lambda"], errors="coerce")
+        finite_lambda = table["lambda"].replace([np.inf, -np.inf], np.nan).dropna()
+        if len(finite_lambda) >= int(n):
+            cutoff = finite_lambda.quantile(float(max_lambda_quantile))
+            retained = table[np.isfinite(table["lambda"]) & (table["lambda"] <= cutoff)]
+            if len(retained) >= int(n):
+                table = retained
+
+    order = ["r2_logI"]
+    if enrichment_col is not None:
+        order.append(enrichment_col)
+    table["representative_selection"] = "original_hpd_distance_profile"
+    return table.sort_values(order, ascending=False, kind="stable").head(int(n)).copy()
+
+
+def spatially_coherent_representatives(
+    adata, assignments, report, *, cluster, n=5, matrix_source="X",
+    n_neighbors=6, max_lambda_quantile=0.90,
+):
+    """Rank display features without changing program assignments.
+
+    The preserved distance-profile criteria (R2, interface enrichment and
+    lambda) are combined with agreement to the program centroid and local
+    spatial continuity. This is intended only for representative figures.
+    """
+    from scipy.stats import spearmanr
+    from sklearn.neighbors import NearestNeighbors
+
+    table = assignments[assignments["cluster"].astype(int) == int(cluster)].copy()
+    if table.empty:
+        return table
+    index_col = _assignment_index(table)
+    matrix = _msi_matrix(adata, matrix_source)
+    xy = np.asarray(adata.obsm["spatial"], float)
+    k = min(int(n_neighbors) + 1, adata.n_obs)
+    neighbours = NearestNeighbors(n_neighbors=k).fit(xy).kneighbors(
+        xy, return_distance=False
+    )[:, 1:]
+    centroid = np.asarray(report["scores"][int(cluster)], float)
+
+    rows = []
+    for row_index, row in table.iterrows():
+        values = _columns(matrix, [int(row[index_col])]).ravel().astype(float)
+        finite = np.isfinite(values)
+        if finite.sum() < 3 or np.nanstd(values) < 1e-10:
+            centroid_r = spatial_r = hotspot_continuity = np.nan
+        else:
+            centroid_r = spearmanr(values[finite], centroid[finite]).statistic
+            filled = values.copy()
+            filled[~finite] = np.nanmedian(values[finite])
+            z = (filled - filled.mean()) / (filled.std() + 1e-9)
+            neighbour_mean = z[neighbours].mean(axis=1)
+            spatial_r = float(np.corrcoef(z, neighbour_mean)[0, 1])
+            threshold = np.nanquantile(filled, 0.80)
+            hotspot = filled >= threshold
+            hotspot_continuity = float(
+                np.mean(np.any(hotspot[neighbours], axis=1)[hotspot])
+            ) if hotspot.any() else np.nan
+        rows.append((row_index, centroid_r, spatial_r, hotspot_continuity))
+
+    qc = pd.DataFrame(
+        rows, columns=["_row", "centroid_correlation", "spatial_coherence", "hotspot_continuity"]
+    ).set_index("_row")
+    table = table.join(qc)
+    if "lambda" in table and table["lambda"].notna().any():
+        cutoff = table["lambda"].quantile(float(max_lambda_quantile))
+        retained = table[table["lambda"] <= cutoff]
+        if len(retained) >= int(n):
+            table = retained
+
+    # A representative spatial map must be locally coherent. Use a relative
+    # within-program gate so this display QC adapts to tissue resolution while
+    # retaining at least n candidates whenever possible.
+    finite_spatial = table["spatial_coherence"].dropna()
+    if len(finite_spatial) >= int(n):
+        spatial_cutoff = max(0.20, float(finite_spatial.median()))
+        retained = table[
+            (table["spatial_coherence"] >= spatial_cutoff)
+            & (table["centroid_correlation"] > 0)
+        ]
+        if len(retained) >= int(n):
+            table = retained
+
+    metric_weights = {
+        "r2_logI": 0.15,
+        "boundary_enrichment_ratio": 0.15,
+        "centroid_correlation": 0.25,
+        "spatial_coherence": 0.35,
+        "hotspot_continuity": 0.10,
+    }
+    available = {key: weight for key, weight in metric_weights.items() if key in table}
+    ranks = []
+    weights = []
+    for key, weight in available.items():
+        ranks.append(table[key].rank(pct=True).fillna(0).to_numpy())
+        weights.append(weight)
+    table["representative_score"] = np.average(ranks, axis=0, weights=weights)
+    table["representative_selection"] = "distance_profile_plus_spatial_qc"
+    return table.sort_values(
+        ["representative_score", "r2_logI"], ascending=False
+    ).head(int(n)).copy()
+
+
 def _format_mz(value):
     """Format numeric and common prefixed m/z feature identifiers."""
     text = str(value).strip()
@@ -194,6 +332,7 @@ def plot_bidirectional_program_enrichment(table, output_dir, *, leading_program,
 def plot_integrated_program_summary(
     adata, report, statistics, representatives, output_dir, *, leading_program,
     prefix="sigma", matrix_source="X", interface_label="SIGMA interface",
+    annotation_key="annotation", annotation_title="Annotation",
 ):
     """Combine program patterns, enrichment and representative metabolites."""
     from matplotlib.gridspec import GridSpec
@@ -212,17 +351,34 @@ def plot_integrated_program_summary(
     vmax = max(np.percentile(np.abs(report["scores"][c]), 98) for c in clusters)
     pattern_points = None
     annotation_ax = fig.add_subplot(grid[0, 0:5])
-    annotation = adata.obs["annotation"].astype(str) if "annotation" in adata.obs else None
+    annotation = (
+        adata.obs[annotation_key].astype(str)
+        if annotation_key is not None and annotation_key in adata.obs else None
+    )
     if annotation is not None:
-        tumor = annotation.str.lower().str.contains("tumor") & ~annotation.str.lower().str.contains("non")
-        annotation_colors = np.where(tumor, "#D95F5F", "#67B7C7")
+        categories = list(dict.fromkeys(annotation.tolist()))
+        semantic_colors = {
+            "tumor_region": "#D95F5F", "tumor_core_like": "#D95F5F",
+            "tumor_transition": "#F2A65A", "mixed_transition": "#F2A65A",
+            "tme_or_mixed_region": "#67B7C7",
+            "invasive_margin_like": "#E3A857",
+            "microenvironment_like": "#67B7C7", "neural_like": "#7A83C6",
+        }
+        fallback = plt.get_cmap("tab10")
+        color_map = {
+            category: semantic_colors.get(category.lower(), fallback(i % 10))
+            for i, category in enumerate(categories)
+        }
+        annotation_colors = annotation.map(color_map).to_numpy()
         annotation_ax.scatter(xy[:, 0], xy[:, 1], c=annotation_colors, s=4,
                               linewidths=0, rasterized=True)
-        annotation_ax.scatter([], [], c="#D95F5F", s=18, label="Tumor-like")
-        annotation_ax.scatter([], [], c="#67B7C7", s=18, label="Non-tumor-like")
+        for category in categories:
+            annotation_ax.scatter([], [], c=[color_map[category]], s=18,
+                                  label=str(category).replace("_", " "))
         annotation_ax.legend(loc="upper center", bbox_to_anchor=(.5, -.02),
-                             frameon=False, fontsize=7, ncol=1)
-    annotation_ax.set_title("Weak annotation")
+                             frameon=False, fontsize=6.5,
+                             ncol=1 if len(categories) <= 3 else 2)
+    annotation_ax.set_title(annotation_title)
     style_spatial_axis(annotation_ax)
 
     distance_ax = fig.add_subplot(grid[0, 5:10])
@@ -627,3 +783,39 @@ def plot_stroma_near_far_validation(table, output_dir, *, leading_program, prefi
     ax.spines[["top", "right"]].set_visible(False)
     save_figure(fig, Path(output_dir) / f"{prefix}_stroma_side_near_far_validation",
                 formats=("pdf", "svg", "png"), close=True)
+
+
+def plot_program_selection_diagnostics(table, output_dir, *, prefix="sigma"):
+    """Plot near-versus-far evidence against feature-level boundary support."""
+    required = {
+        "program", "near_minus_far", "median_feature_interface_score", "selected",
+    }
+    missing = required.difference(table.columns)
+    if missing:
+        raise KeyError(f"Missing selection-diagnostic columns: {sorted(missing)}")
+    q = table.copy()
+    fig, ax = plt.subplots(figsize=(3.35, 2.75), constrained_layout=True)
+    colors = np.where(q["selected"], "#D9534F", "#91A8C4")
+    ax.scatter(q["near_minus_far"], q["median_feature_interface_score"],
+               c=colors, s=np.where(q["selected"], 42, 28), zorder=3)
+    midpoint = float(np.nanmean([
+        q["near_minus_far"].min(), q["near_minus_far"].max()
+    ]))
+    for row in q.itertuples():
+        left = row.near_minus_far > midpoint
+        ax.annotate(
+            f"P{row.program}",
+            (row.near_minus_far, row.median_feature_interface_score),
+            xytext=(-5, 4) if left else (5, 4), textcoords="offset points",
+            ha="right" if left else "left", va="bottom", clip_on=False,
+            color="#D9534F" if row.selected else ".25",
+            fontweight="bold" if row.selected else "normal", fontsize=7,
+        )
+    ax.set_xlabel("Near–far enrichment")
+    ax.set_ylabel("Median feature interface score")
+    ax.set_title("Interface-program selection")
+    ax.margins(x=.18, y=.18)
+    save_figure(
+        fig, Path(output_dir) / f"{prefix}_program_selection_diagnostics",
+        formats=("pdf", "svg", "png"), close=True,
+    )

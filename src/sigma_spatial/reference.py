@@ -30,15 +30,15 @@ class ReferencePreset:
 
 REFERENCE_PRESETS = {
     "HBC515": ReferencePreset("HBC515", "msi_uns", 3),
-    "HBC525": ReferencePreset("HBC525", "msi_uns", 2),
-    "HLC091": ReferencePreset("HLC091", "msi_uns", None),
-    "HLC276": ReferencePreset("HLC276", "msi_uns", None),
+    "HBC525": ReferencePreset("HBC525", "msi_uns", 0),
+    "HLC091": ReferencePreset("HLC091", "msi_uns", 0),
+    "HLC276": ReferencePreset("HLC276", "msi_uns", 2),
     "ccRCC_Y27T": ReferencePreset("ccRCC_Y27T", "X", 0),
     "GBM": ReferencePreset("GBM", "X", 1),
-    "HCC_P1": ReferencePreset("HCC_P1", "X", 0, near_quantile=.25, far_quantile=.75),
-    "HCC_P4": ReferencePreset("HCC_P4", "X", 1, near_quantile=.25, far_quantile=.75),
+    "HCC_P1": ReferencePreset("HCC_P1", "X", 3, near_quantile=.25, far_quantile=.75),
+    "HCC_P4": ReferencePreset("HCC_P4", "X", 2, near_quantile=.25, far_quantile=.75),
     "HPD_A1": ReferencePreset("HPD_A1", "X", 3, ranking_col="r2_logI"),
-    "HPD_B1": ReferencePreset("HPD_B1", "X", 0, ranking_col="r2_logI"),
+    "HPD_B1": ReferencePreset("HPD_B1", "X", 2, ranking_col="r2_logI"),
     "HPD_C1": ReferencePreset("HPD_C1", "X", 1, ranking_col="r2_logI"),
 }
 

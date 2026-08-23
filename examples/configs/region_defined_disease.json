@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "input_h5ad": "../data/sample_disease_regions.h5ad",
+  "output_dir": "../results/region_defined_disease",
+  "prefix": "sample_disease",
+  "workflow": "region_defined_disease",
+  "evidence": {"region_defined": true},
+  "report_level": "complete",
+  "selection_mode": "lambda_profile",
+  "program_selection": "auto",
+  "matrix_source": "X",
+  "random_state": 0
+}

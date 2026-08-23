@@ -93,6 +93,7 @@ def run_downstream_analysis(
     annotation_signatures=(),
     side_names=None,
     selection_mode="standardized",
+    program_selection="auto",
     workflow="direct_pathology",
     selection_orientation=None,
     ranking_col=None,
@@ -114,6 +115,8 @@ def run_downstream_analysis(
     matrix_source="X",
     interface_label="SIGMA interface",
     association_label="interface-associated",
+    annotation_key="annotation",
+    annotation_title="Annotation",
     random_state=0,
     deterministic=True,
     program_assignments=None,
@@ -135,8 +138,12 @@ def run_downstream_analysis(
     from .reporting import (
         anisotropy_report, plot_anisotropy_polar,
         plot_bidirectional_program_enrichment, plot_program_report,
+        plot_program_selection_diagnostics,
     )
-    from .selection import side_near_far_statistics, select_bidirectional_programs
+    from .selection import (
+        side_near_far_statistics, select_bidirectional_programs,
+        select_leading_program,
+    )
     from .st_validation import (
         plot_program_signature_heatmap, plot_signature_enrichment_lollipop,
         program_signature_association, record_st_validation_provenance,
@@ -228,9 +235,11 @@ def run_downstream_analysis(
         statistics, fdr_max=fdr_max, effect_min=effect_min
     )
     candidates = selected if len(selected) else statistics
-    if selection_orientation is None and workflow == "transferred_pathology":
-        # HCC weak anchors are used to find metabolic programs extending into
-        # the non-tumor-like side, not the strongest compartment-wide signal.
+    if selection_orientation is None and workflow in {
+        "transferred_pathology", "region_defined_disease",
+    }:
+        # These workflows target programs extending into the positive semantic
+        # side recorded in workflow provenance.
         selection_orientation = "positive"
     if selection_orientation is not None:
         oriented = candidates[candidates["orientation"] == selection_orientation]
@@ -244,13 +253,49 @@ def run_downstream_analysis(
     )
     program_summary.to_csv(output / f"{prefix}_program_interface_summary.csv", index=False)
     assignment_qc.to_csv(output / f"{prefix}_program_assignment_qc.csv", index=False)
-    if selection_mode == "standardized":
+    valid_program_selection = {"auto", "near_far", "boundary_localized", "program_interface"}
+    if program_selection not in valid_program_selection:
+        raise ValueError(
+            f"program_selection must be one of {sorted(valid_program_selection)}"
+        )
+    resolved_program_selection = program_selection
+    if resolved_program_selection == "auto":
+        if selection_mode == "standardized":
+            resolved_program_selection = "program_interface"
+        elif workflow == "region_defined_disease":
+            resolved_program_selection = "boundary_localized"
+        else:
+            resolved_program_selection = "near_far"
+    if resolved_program_selection == "program_interface":
         automatic_program = program_summary.iloc[0]["program"]
+        selection_diagnostics = program_summary.rename(columns={
+            "median_interface_score": "median_feature_interface_score",
+        }).copy()
+        selection_diagnostics["passes_stage1"] = (
+            selection_diagnostics["fdr"].le(float(fdr_max))
+            & selection_diagnostics["near_minus_far"].gt(float(effect_min))
+        )
+        selection_diagnostics["selected"] = selection_diagnostics["program"].eq(automatic_program)
+        selection_diagnostics["selection_strategy"] = resolved_program_selection
     else:
-        automatic_program = finite.loc[finite["near_minus_far"].idxmax(), "program"]
+        automatic_program, selection_diagnostics = select_leading_program(
+            statistics, analysis.assignments,
+            orientation=selection_orientation,
+            strategy=resolved_program_selection,
+            fdr_max=fdr_max, effect_min=effect_min,
+        )
+    selection_diagnostics.to_csv(
+        output / f"{prefix}_program_selection_metrics.csv", index=False
+    )
+    if report_level != "none" and {
+        "near_minus_far", "median_feature_interface_score", "selected",
+    }.issubset(selection_diagnostics.columns):
+        plot_program_selection_diagnostics(
+            selection_diagnostics, output, prefix=prefix
+        )
     leading_selection = (
-        f"automatic_near_far_{selection_orientation}_side"
-        if selection_orientation else "automatic_near_far"
+        f"automatic_{resolved_program_selection}_{selection_orientation}_side"
+        if selection_orientation else f"automatic_{resolved_program_selection}"
     )
     if leading_program is None:
         leading_program = automatic_program
@@ -295,6 +340,15 @@ def run_downstream_analysis(
                 analysis.assignments, cluster=leading_program,
                 n=int(representative_n), score="interface_score",
             )
+        elif selection_mode == "lambda_profile" and workflow == "region_defined_disease":
+            # Preserve the original HPD two-stage analysis: Ward clustering of
+            # signed-distance profiles first, then distance-fit/enrichment
+            # ranking only within the selected disease-interface program.
+            from .reporting import disease_profile_representatives
+            standardized_representatives = disease_profile_representatives(
+                analysis.assignments, cluster=leading_program,
+                n=int(representative_n),
+            )
         else:
             standardized_representatives = None
     if report_level == "none":
@@ -322,6 +376,7 @@ def run_downstream_analysis(
             adata, report, statistics, representatives, output,
             leading_program=leading_program, prefix=prefix,
             matrix_source=matrix_source, interface_label=interface_label,
+            annotation_key=annotation_key, annotation_title=annotation_title,
         )
     if report_level in {"complete", "manuscript"}:
         from .reporting import plot_interface_metric_supplement
@@ -391,6 +446,7 @@ def run_downstream_analysis(
         "automatic_leading_program": int(automatic_program) if isinstance(automatic_program, (int, np.integer)) else str(automatic_program),
         "leading_program_selection": leading_selection,
         "selection_mode": selection_mode,
+        "program_selection": resolved_program_selection,
         "matrix_source": matrix_source,
         "fdr_max": float(fdr_max), "effect_min": float(effect_min),
         "near_quantile": float(near_quantile), "far_quantile": float(far_quantile),
@@ -418,6 +474,7 @@ def run_analysis(
     evidence=None,
     report_level="standard",
     selection_mode="lambda_profile",
+    program_selection="auto",
     anchor_key="sigma_anchor",
     representation_key="X_harmony",
     spatial_key="spatial",
@@ -490,15 +547,17 @@ def run_analysis(
     downstream = run_downstream_analysis(
         result, output_dir=output, prefix=prefix,
         signature_scores=signature_scores, selection_mode=selection_mode,
+        program_selection=program_selection,
         workflow=resolved_workflow, matrix_source=matrix_source,
         report_level=report_level, random_state=random_state, **options,
     )
     run_config = {
         "schema_version": 1,
-        "package_version": "0.2.1",
+        "package_version": "0.3.1",
         "workflow": resolved_workflow,
         "core_route": core_route,
         "selection_mode": selection_mode,
+        "program_selection": program_selection,
         "report_level": report_level,
         "matrix_source": matrix_source,
         "random_state": int(random_state),

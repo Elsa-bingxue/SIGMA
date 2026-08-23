@@ -24,5 +24,7 @@ def test_workflow_presets_are_shared_not_slice_specific():
     disease = get_lambda_profile_preset("region_defined_disease")
     assert hcc.already_log is True
     assert hcc.min_r2 == .005
-    assert disease.ranking_col == "interface_score"
+    # The preserved HPD notebooks rank the common candidate pool by decay-fit
+    # quality before Ward clustering; enrichment is retained as annotation.
+    assert disease.ranking_col == "r2_logI"
     assert disease.min_detect_rate == .01
