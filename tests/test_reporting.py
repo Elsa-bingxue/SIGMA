@@ -3,7 +3,8 @@ import pandas as pd
 import anndata as ad
 
 from sigma_spatial.reporting import (
-    anisotropy_report, program_report_data, representative_metabolites,
+    anisotropy_report, disease_profile_representatives,
+    program_report_data, representative_metabolites,
     stroma_near_far_statistics,
 )
 from sigma_spatial.preprocessing import resolve_sm_matrix
@@ -36,6 +37,29 @@ def test_representatives_respect_requested_cluster():
     selected = representative_metabolites(assignments, cluster=3, n=2)
     assert selected["cluster"].eq(3).all()
     assert selected["r2_logI"].is_monotonic_decreasing
+
+
+def test_disease_representatives_preserve_original_profile_ranking():
+    assignments = pd.DataFrame({
+        "j": np.arange(7), "mz": 100 + np.arange(7),
+        "cluster": [0, 0, 0, 0, 0, 1, 1],
+        "r2_logI": [.31, .28, .24, .20, .19, .90, .80],
+        "slope": [-.1, -.2, -.3, -.4, -.5, -.1, -.1],
+        "lambda": [10, 20, 30, 40, 10000, 10, 20],
+        "boundary_enrichment_ratio": [1.1, 1.2, 1.3, 1.4, 2.0, 2.0, 2.0],
+    })
+    selected = disease_profile_representatives(assignments, cluster=0, n=4)
+    assert selected["cluster"].eq(0).all()
+    assert selected["mz"].tolist() == [100, 101, 102, 103]
+    assert selected["representative_selection"].eq(
+        "original_hpd_distance_profile"
+    ).all()
+
+
+def test_region_defined_disease_uses_original_r2_ranking():
+    from sigma_spatial.lambda_profile import get_lambda_profile_preset
+
+    assert get_lambda_profile_preset("region_defined_disease").ranking_col == "r2_logI"
 
 
 def test_anisotropy_report_has_all_sectors():
@@ -86,3 +110,14 @@ def test_explicit_matrix_source_does_not_silently_prefer_raw():
     raw_matrix, _ = resolve_sm_matrix(obj, "raw")
     np.testing.assert_array_equal(x_matrix, obj.X)
     np.testing.assert_array_equal(raw_matrix, obj.layers["raw"])
+
+
+def test_sm_var_source_maps_joint_object_by_feature_name():
+    x = np.array([[10., 20., 1., 2.], [30., 40., 3., 4.]])
+    obj = ad.AnnData(x)
+    obj.var_names = ["ST_A", "ST_B", "SM_100", "SM_200"]
+    obj.uns["SM_features"] = np.array(["SM_100", "SM_200"])
+    obj.uns["SM_mz"] = np.array([100.1, 200.2])
+    matrix, names = resolve_sm_matrix(obj, "sm_var")
+    np.testing.assert_array_equal(matrix, x[:, 2:])
+    assert names.tolist() == ["100.1", "200.2"]

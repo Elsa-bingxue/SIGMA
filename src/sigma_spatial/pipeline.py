@@ -23,7 +23,9 @@ class SIGMA:
 
     def fit(self, adata, annotation_key="annotation", tumor_label="Tumor", stroma_label="Stroma",
             rna_key="X_harmony", z_dim=32, epochs=1000, lr=1e-3,
-            lambda_sup=0.05, beta_rna=0.05, boundary_k=10):
+            lambda_sup=0.05, beta_rna=0.05, boundary_k=10,
+            boundary_mode="legacy", boundary_min_component_size=10,
+            boundary_max_hole_size=10):
         set_seed(self.seed)
         if "spatial" not in adata.obsm:
             raise KeyError("adata.obsm['spatial'] is required")
@@ -87,7 +89,12 @@ class SIGMA:
                 np.nanmax(p_raw) - np.nanmin(p_raw) + 1e-8
             )
 
-        boundary, inside = build_boundary_from_field(xy, p, level=0.5, k_nn=boundary_k)
+        boundary, inside = build_boundary_from_field(
+            xy, p, level=0.5, k_nn=boundary_k,
+            boundary_mode=boundary_mode,
+            min_component_size=boundary_min_component_size,
+            max_hole_size=boundary_max_hole_size,
+        )
         d_signed = signed_distance_from_boundary_points(xy, boundary, inside)
 
         adata.obsm["X_sigma_msi"] = e
@@ -100,6 +107,11 @@ class SIGMA:
         adata.obs["sigma_inside"] = inside
         adata.obs["sigma_boundary"] = boundary
         adata.obs["sigma_d_signed"] = d_signed
-        adata.uns["sigma"] = {"sigma": sigma, "k": self.k, "seed": self.seed}
+        adata.uns["sigma"] = {
+            "sigma": sigma, "k": self.k, "seed": self.seed,
+            "boundary_mode": boundary_mode,
+            "boundary_min_component_size": int(boundary_min_component_size),
+            "boundary_max_hole_size": int(boundary_max_hole_size),
+        }
         self.adata_ = adata
         return self

@@ -120,6 +120,9 @@ def run_sigma_weak_anchor(
     lambda_supervised=0.05,
     boundary_level=0.5,
     boundary_neighbors=10,
+    boundary_mode="legacy",
+    boundary_min_component_size=10,
+    boundary_max_hole_size=10,
     verbose=False,
     anchor_mode="unspecified_weak_anchor",
     anchor_provenance=None,
@@ -199,7 +202,10 @@ def run_sigma_weak_anchor(
     hp_score = np.linalg.norm(residual, axis=1)
     hp_score = (hp_score - hp_score.min()) / (hp_score.max() - hp_score.min() + 1e-8)
     boundary, inside = build_boundary_from_field(
-        xy, probability, level=boundary_level, k_nn=boundary_neighbors
+        xy, probability, level=boundary_level, k_nn=boundary_neighbors,
+        boundary_mode=boundary_mode,
+        min_component_size=boundary_min_component_size,
+        max_hole_size=boundary_max_hole_size,
     )
     if boundary.sum() < 2:
         raise ValueError("Boundary construction produced fewer than two boundary spots.")
@@ -236,6 +242,9 @@ def run_sigma_weak_anchor(
         "already_log": bool(already_log),
         "epochs": int(epochs),
         "lambda_supervised": float(lambda_supervised),
+        "boundary_mode": boundary_mode,
+        "boundary_min_component_size": int(boundary_min_component_size),
+        "boundary_max_hole_size": int(boundary_max_hole_size),
         "rna_loss": False,
         "loss_history": loss_history,
     }

@@ -28,6 +28,27 @@ def resolve_sm_matrix(adata, matrix_source="X"):
     matrix or layer is selected. ``msi_uns`` is assumed to already be SM-only.
     """
     source = str(matrix_source)
+    if source == "sm_var":
+        if "SM_features" not in adata.uns:
+            raise KeyError("adata.uns['SM_features'] is required for matrix_source='sm_var'")
+        requested = np.asarray(adata.uns["SM_features"]).astype(str)
+        var_names = np.asarray(adata.var_names).astype(str)
+        if len(np.unique(var_names)) != len(var_names):
+            raise ValueError("adata.var_names must be unique for matrix_source='sm_var'")
+        lookup = {name: j for j, name in enumerate(var_names)}
+        missing = [name for name in requested if name not in lookup]
+        if missing:
+            raise KeyError(
+                f"{len(missing)} SM_features are absent from adata.var_names; "
+                f"first missing feature: {missing[0]!r}"
+            )
+        indices = np.asarray([lookup[name] for name in requested], dtype=int)
+        matrix = adata[:, indices].X
+        mz = adata.uns.get("SM_mz")
+        names = np.asarray(mz if mz is not None else requested).astype(str)
+        if len(names) != matrix.shape[1]:
+            raise ValueError("adata.uns['SM_mz'] does not match adata.uns['SM_features']")
+        return matrix, names
     if source == "msi_uns":
         if "msi" not in adata.uns:
             raise KeyError("adata.uns['msi'] is required for matrix_source='msi_uns'")
@@ -58,7 +79,9 @@ def resolve_sm_matrix(adata, matrix_source="X"):
             raise KeyError(f"adata.layers[{layer!r}] is required")
         matrix = view.layers[layer]
     else:
-        raise ValueError("matrix_source must be 'X', 'raw', 'msi_uns', or 'layer:<name>'")
+        raise ValueError(
+            "matrix_source must be 'X', 'raw', 'msi_uns', 'sm_var', or 'layer:<name>'"
+        )
     names = view.var.get("feature_name", view.var_names.to_series()).astype(str).to_numpy()
     return matrix, names
 

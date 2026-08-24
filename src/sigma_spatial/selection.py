@@ -107,3 +107,69 @@ def select_bidirectional_programs(
     return selected.sort_values(
         ["orientation", "near_minus_far"], ascending=[True, False]
     ).reset_index(drop=True)
+
+
+def select_leading_program(
+    statistics: pd.DataFrame,
+    assignments: pd.DataFrame,
+    *,
+    orientation: str | None = None,
+    strategy: str = "near_far",
+    fdr_max: float = 0.05,
+    effect_min: float = 0.0,
+) -> tuple[object, pd.DataFrame]:
+    """Select one leading metabolic program and return an auditable table.
+
+    ``near_far`` preserves the original automatic rule. ``boundary_localized``
+    first requires positive, FDR-controlled near-versus-far enrichment and then
+    chooses the candidate with the highest median feature-level interface score.
+    The latter is intended for validated named-region disease workflows; it is
+    not a universal replacement for the reference rules used by other workflows.
+    """
+    if strategy not in {"near_far", "boundary_localized"}:
+        raise ValueError("strategy must be 'near_far' or 'boundary_localized'")
+    required = {"program", "orientation", "near_minus_far", "fdr"}
+    missing = required.difference(statistics.columns)
+    if missing:
+        raise KeyError(f"Missing statistics columns: {sorted(missing)}")
+    if "cluster" not in assignments:
+        raise KeyError("assignments must contain a 'cluster' column")
+
+    table = statistics.copy()
+    if orientation is not None:
+        table = table.loc[table["orientation"].eq(orientation)].copy()
+    if table.empty:
+        raise ValueError(f"No program statistics for orientation {orientation!r}")
+
+    if "interface_score" in assignments:
+        boundary = assignments.groupby("cluster")["interface_score"].median()
+        table["median_feature_interface_score"] = table["program"].map(boundary)
+    else:
+        table["median_feature_interface_score"] = np.nan
+    counts = assignments.groupby("cluster").size()
+    table["feature_count"] = table["program"].map(counts).fillna(0).astype(int)
+    table["passes_stage1"] = (
+        table["fdr"].le(float(fdr_max))
+        & table["near_minus_far"].gt(float(effect_min))
+    )
+    candidates = table.loc[table["passes_stage1"]].copy()
+    if candidates.empty:
+        raise ValueError("No program passed the FDR and near-versus-far effect gate")
+
+    if strategy == "boundary_localized":
+        finite = candidates.dropna(subset=["median_feature_interface_score"])
+        if finite.empty:
+            raise ValueError(
+                "boundary_localized selection requires assignments['interface_score']"
+            )
+        leading = finite.sort_values(
+            ["median_feature_interface_score", "near_minus_far"],
+            ascending=[False, False], kind="stable",
+        ).iloc[0]["program"]
+    else:
+        leading = candidates.sort_values(
+            "near_minus_far", ascending=False, kind="stable"
+        ).iloc[0]["program"]
+    table["selected"] = table["program"].eq(leading)
+    table["selection_strategy"] = strategy
+    return leading, table.sort_values("program", kind="stable").reset_index(drop=True)

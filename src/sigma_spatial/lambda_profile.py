@@ -43,7 +43,7 @@ LAMBDA_PROFILE_PRESETS = {
     ),
     "region_defined_disease": LambdaProfilePreset(
         "region_defined_disease", var_top=None, min_detect_rate=.01,
-        min_r2=.005, min_enrichment=1.01, ranking_col="interface_score",
+        min_r2=.005, min_enrichment=1.01, ranking_col="r2_logI",
     ),
 }
 

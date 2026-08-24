@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sigma-omics"
-version = "0.2.1"
+version = "0.3.1"
 description = "Interface-aware spectral graph learning of pathological metabolic transitions"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -12,7 +12,7 @@ license = {text = "MIT"}
 authors = [
   {name = "Bingxue Du", email = "dubingxue73@gmail.com"}
 ]
-keywords = ["spatial omics", "spatial metabolomics", "mass spectrometry imaging", "graph neural network", "tumor boundary"]
+keywords = ["spatial omics", "spatial metabolomics", "mass spectrometry imaging", "spectral graph learning", "pathological interface"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Science/Research",
@@ -41,6 +41,9 @@ dev = ["build>=1.2", "twine>=5", "pytest>=8", "ruff>=0.6"]
 Homepage = "https://github.com/Elsa-bingxue/SIGMA"
 Repository = "https://github.com/Elsa-bingxue/SIGMA"
 Issues = "https://github.com/Elsa-bingxue/SIGMA/issues"
+
+[project.scripts]
+sigma-omics = "sigma_spatial.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sigma_spatial"]

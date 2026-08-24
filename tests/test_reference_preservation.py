@@ -3,7 +3,7 @@ from pathlib import Path
 
 import numpy as np
 
-from sigma_spatial.boundary import build_boundary_from_binary_mask
+from sigma_spatial.boundary import build_boundary_from_binary_mask, build_boundary_from_field
 from sigma_spatial.graph import gaussian_knn_graph, gaussian_label_smoothing, smooth_embedding
 
 
@@ -84,3 +84,24 @@ def test_boundary_requires_same_and_opposite_neighbours():
         build_boundary_from_binary_mask(xy, inside, k_nn=2),
         np.array([True, True, True, True]),
     )
+
+
+def test_robust_boundary_removes_tiny_island_without_changing_default():
+    xx, yy = np.meshgrid(np.arange(8), np.arange(8))
+    xy = np.column_stack([xx.ravel(), yy.ravel()])
+    field = np.zeros(64)
+    main = (xy[:, 0] >= 2) & (xy[:, 0] <= 5) & (xy[:, 1] >= 2) & (xy[:, 1] <= 5)
+    field[main] = 1
+    field[(xy[:, 0] == 7) & (xy[:, 1] == 7)] = 1
+    default_boundary, default_inside = build_boundary_from_field(xy, field, k_nn=4)
+    legacy_boundary, legacy_inside = build_boundary_from_field(
+        xy, field, k_nn=4, boundary_mode="legacy"
+    )
+    robust_boundary, robust_inside = build_boundary_from_field(
+        xy, field, k_nn=4, boundary_mode="robust",
+        min_component_size=2, max_hole_size=0,
+    )
+    np.testing.assert_array_equal(default_inside, legacy_inside)
+    np.testing.assert_array_equal(default_boundary, legacy_boundary)
+    assert default_inside.sum() == robust_inside.sum() + 1
+    assert robust_boundary.sum() <= default_boundary.sum()
