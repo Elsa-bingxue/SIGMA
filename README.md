@@ -126,23 +126,13 @@ Detailed workflow rules, program selection and manuscript reproduction are
 documented in the
 [workflow and reproducibility guide](https://github.com/Elsa-bingxue/SIGMA/blob/main/docs/workflows_and_reproducibility.md).
 
-## Reference data
+## Data availability
 
-Reference datasets are not bundled with the PyPI package. Download the source
-data separately and convert them to the documented `AnnData` input format.
-
-| Reference dataset | Input used by SIGMA | Public source | Workflow |
-|---|---|---|---|
-| `ccRCC_Y27T` | SpatialMETA-aligned joint SM–ST AnnData (`Y_27T`) | [SpatialMETA ccRCC data](https://zenodo.org/records/14986870) | `multiomics_inferred` |
-| `GBM_248T` | SpatialMETA-aligned joint SM–ST AnnData (`248_T`) | [SpatialMETA GBM data](https://doi.org/10.5061/dryad.h70rxwdmj) | `multiomics_inferred` |
-
-These two entries are processed, spatially registered joint SM–ST inputs, not
-unaltered downloads from the original ccRCC and GBM studies. SpatialMETA aligns
-SM and ST to a shared spatial resolution; its processed outputs are available
-from [Zenodo](https://zenodo.org/records/12528191), with code at the
-[SpatialMETA repository](https://github.com/WanluLiuLab/SpatialMETA). Matched ST
-information supports annotation inference and downstream validation, while SM
-remains the target modality for SIGMA analysis.
+Reference data are not bundled with the package. The study uses published
+breast, lung, ccRCC, GBM, HCC and Parkinson's disease spatial-omics datasets.
+Download links, source papers, SIGMA sample names and preprocessing notes are
+listed in the
+[reference-data guide](https://github.com/Elsa-bingxue/SIGMA/blob/main/docs/reference_data.md).
 
 ## Links
 
@@ -151,6 +141,7 @@ remains the target modality for SIGMA analysis.
 - [Output schema](https://github.com/Elsa-bingxue/SIGMA/blob/main/docs/output_schema.md)
 - [Weak-anchor validation](https://github.com/Elsa-bingxue/SIGMA/blob/main/docs/weak_anchor_validation.md)
 - [Result generation](https://github.com/Elsa-bingxue/SIGMA/blob/main/docs/result_generation.md)
+- [Reference data](https://github.com/Elsa-bingxue/SIGMA/blob/main/docs/reference_data.md)
 - [Issues](https://github.com/Elsa-bingxue/SIGMA/issues)
 
 ## Scope
