@@ -60,12 +60,14 @@ def program_signature_association(program_scores, signature_scores):
 def side_near_far_signature_statistics(
     signature_scores, signed_distance, *, side_names=None,
     near_quantile=.20, far_quantile=.80, min_group_size=10,
+    inside_mask=None,
 ):
     """Apply the generic two-sided near/far test to RNA signatures."""
     table = side_near_far_statistics(
         signature_scores, signed_distance, side_names=side_names,
         near_quantile=near_quantile, far_quantile=far_quantile,
         min_group_size=min_group_size,
+        inside_mask=inside_mask,
     )
     return table.rename(columns={"program": "signature"})
 

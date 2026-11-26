@@ -22,11 +22,6 @@ def _parser() -> argparse.ArgumentParser:
     report.add_argument("--adjacent-section-pathology", action="store_true")
     report.add_argument("--region-defined", action="store_true")
 
-    configured = sub.add_parser(
-        "run-config", help="run SIGMA from a portable JSON configuration"
-    )
-    configured.add_argument("config_json")
-
     manifest = sub.add_parser("write-manuscript-manifest", help="write the frozen manuscript manifest")
     manifest.add_argument("output_json")
 
@@ -46,11 +41,6 @@ def main(argv=None) -> int:
         from .manuscript import reproduce_manuscript_figures
         for path in reproduce_manuscript_figures(args.project_root, figures=args.figures):
             print(path)
-        return 0
-    if args.command == "run-config":
-        from .config import run_analysis_config
-        result = run_analysis_config(args.config_json)
-        print(result.output_dir)
         return 0
     if args.command == "report":
         import anndata as ad

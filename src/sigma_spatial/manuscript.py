@@ -6,6 +6,8 @@ distributed SIGMA reference-data project.
 """
 from __future__ import annotations
 
+from . import __version__
+
 import json
 import os
 from pathlib import Path
@@ -38,7 +40,7 @@ def manuscript_manifest() -> dict:
     return {
         "schema_version": 1,
         "manuscript_version": MANUSCRIPT_VERSION,
-        "package_version": "0.3.1",
+        "package_version": __version__,
         "random_seed": 0,
         "selected_programs": dict(MANUSCRIPT_PROGRAMS),
         "figure_builders": dict(FIGURE_BUILDERS),

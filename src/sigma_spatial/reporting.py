@@ -699,17 +699,23 @@ def stroma_near_far_statistics(
 ):
     """Score programs and optional ST signatures on the stromal interface side.
 
-    The defaults preserve the HBC515 analysis: 0 < distance <= 5 spot spacings
+    With an explicit side label, 0 <= distance <= 5 spot spacings
     is near and distance >= 8 spot spacings is far. The leading program is
     selected from metabolic programs only, never from RNA signatures.
     """
+    if (not np.isfinite(spot_spacing) or spot_spacing <= 0
+            or not np.isfinite(near_width) or not np.isfinite(far_start)
+            or not 0 <= near_width < far_start):
+        raise ValueError("Require positive spot_spacing and 0 <= near_width < far_start")
     distance = adata.obs["sigma_d_signed"].to_numpy(float)
     if annotation_key in adata.obs:
         labels = adata.obs[annotation_key].astype(str).str.lower()
         stroma = labels.str.contains("stroma").to_numpy()
     else:
-        stroma = distance > 0
-    near = stroma & np.isfinite(distance) & (distance > 0) & (
+        from .coordinates import interface_side_masks
+        inside = adata.obs['sigma_inside'].to_numpy() if 'sigma_inside' in adata.obs else None
+        stroma = interface_side_masks(distance, inside)['positive']
+    near = stroma & np.isfinite(distance) & (distance >= 0) & (
         distance <= near_width * spot_spacing
     )
     far = stroma & np.isfinite(distance) & (distance >= far_start * spot_spacing)

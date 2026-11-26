@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from sigma_spatial.config import load_analysis_config
+from scripts.config_runner import load_analysis_config
 
 
 def test_load_analysis_config_resolves_relative_paths(tmp_path):

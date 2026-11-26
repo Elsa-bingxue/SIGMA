@@ -4,10 +4,15 @@
   "output_dir": "../results/transferred_pathology",
   "prefix": "sample_transferred",
   "workflow": "transferred_pathology",
-  "evidence": {"adjacent_section_pathology": true},
+  "evidence": {
+    "adjacent_section_pathology": true
+  },
   "report_level": "complete",
   "selection_mode": "lambda_profile",
   "program_selection": "auto",
   "matrix_source": "X",
-  "random_state": 0
+  "random_state": 0,
+  "core_kwargs": {
+    "distance_mode": "continuous"
+  }
 }

@@ -7,6 +7,8 @@ from .boundary import (
     signed_distance_from_boundary_points,
 )
 from .io import load_spatial_metabolomics, load_spatial_transcriptomics
+from .coordinates import (continuous_signed_distance, contour_segments,
+    distances_to_segments, interface_side_masks, update_interface_coordinate)
 from .input_assessment import InputAssessment, assess_input, inspect_input
 from .lambda_profile import (
     LambdaProfilePreset, get_lambda_profile_preset, rank_lambda_profiles,
@@ -24,8 +26,10 @@ from .workflows import (
     get_workflow_config, record_workflow_provenance,
 )
 
-__version__ = "0.3.1"
+__version__ = "0.3.2"
 __all__ = [
+    "continuous_signed_distance", "contour_segments", "distances_to_segments",
+    "interface_side_masks", "update_interface_coordinate",
     "SIGMA", "run_sigma", "run_analysis", "run_downstream_analysis",
     "AnalysisResult", "DownstreamAnalysis",
     "run_sigma_weak_anchor", "anchors_from_clusters", "load_spatial_metabolomics",
@@ -61,7 +65,6 @@ __all__ = [
     "ReferencePreset", "REFERENCE_PRESETS", "list_reference_datasets",
     "get_reference_preset", "run_reference_analysis",
     "manuscript_manifest", "write_manuscript_manifest", "reproduce_manuscript_figures",
-    "AnalysisConfig", "load_analysis_config", "run_analysis_config",
 ]
 
 
@@ -101,9 +104,6 @@ def __getattr__(name):
     }:
         from . import manuscript
         return getattr(manuscript, name)
-    if name in {"AnalysisConfig", "load_analysis_config", "run_analysis_config"}:
-        from . import config
-        return getattr(config, name)
     if name in {
         "program_signature_association", "side_near_far_signature_statistics",
         "record_st_validation_provenance", "plot_program_signature_heatmap",

@@ -29,11 +29,12 @@ evidence flags: `same_section_pathology`, `matched_st`,
 ## Program selection
 
 The default selection is workflow-aware. Direct, multi-omics-inferred and
-transferred-pathology analyses use the validated near-versus-far rule.
+transferred-pathology analyses use same-side near-versus-far comparisons.
 Region-defined disease analyses use a two-stage boundary-localized rule: an
 initial effect-size and FDR gate is followed by ranking on median feature-level
-interface support. Matched-ST signatures are used for validation rather than
-program selection.
+interface support. Matched-ST signatures are supplied as contextual readouts rather than
+programme-selection criteria. They are not independent validation if RNA was used
+to fit the field or construct anchors.
 
 Program-selection metrics and the resolved strategy are written beside each
 report. Sparse signed-distance grids may use fewer bins than requested; both
@@ -64,25 +65,13 @@ For other frozen analyses, use `selection_mode="reference"` and provide the
 final ranking table. An explicit `leading_program=` may be used when the
 manuscript program identity is already fixed.
 
-## Manuscript figures
+## Current and historical figures
 
-The wheel contains the versioned manifest and figure orchestration. Large
-`AnnData` objects and histology images remain in the reference-data project.
-
-```bash
-sigma-omics write-manuscript-manifest manuscript-v1.json
-sigma-omics reproduce-manuscript /path/to/SIGMA-Code-Clean
-```
-
-To rebuild selected figures:
-
-```bash
-sigma-omics reproduce-manuscript /path/to/SIGMA-Code-Clean \
-  --figures Fig3 Fig8
-```
-
-The manuscript-v1 manifest records seed 0 and the validated leading programs,
-including Cd1 P3, Cd2 P2 and Cd3 P1.
+The package's built-in manuscript manifest is retained for historical compatibility.
+It does not identify the current six-figure manuscript layout. Use the manuscript
+archive README, complete figure legends and source-data index for current panels.
+Raw data and frozen fits are not included in the wheel. A new fit is not expected
+to preserve historical programme numbers without the frozen assignment table.
 
 ## Provenance
 

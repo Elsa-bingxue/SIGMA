@@ -43,6 +43,7 @@ def digest(values, key):
     return hashlib.sha256(np.asarray(values).astype(dtype).tobytes()).hexdigest()
 
 
+@pytest.mark.skipif(not all(p.exists() for p in HCC_REFERENCES), reason="External HCC fits are not bundled")
 def test_frozen_hcc_p1_p4_outputs_are_unchanged():
     for path, expected in HCC_REFERENCES.items():
         a = ad.read_h5ad(path, backed="r")

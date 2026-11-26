@@ -1,152 +1,135 @@
-# SIGMA (`sigma-omics`)
+# SIGMA
 
-**SIGMA resolves pathological metabolic transitions with interface-aware
-spectral graph learning.**
+SIGMA identifies metabolic programmes around tumour–stroma interfaces by integrating
+spatial metabolomics, tissue coordinates and pathological or weak anchors. Matched
+spatial RNA provides an auxiliary representation when available.
 
-SIGMA is a Python framework for identifying pathological interfaces from
-spatial metabolomics. It combines tissue coordinates, metabolite intensities
-and pathology-derived or weak spatial anchors to recover continuous interface
-fields and boundary-associated metabolic programs.
+The analysis asks where a programme changes, how far its signal extends, and which
+parts of an interface differ. The main outputs are a learned tissue field, a signed
+distance coordinate, ranked ions and spatial programmes with distance profiles.
 
-Spatial transcriptomics is optional. When matched data are available, it can
-support auxiliary alignment and independent biological validation.
+[![PyPI](https://img.shields.io/pypi/v/sigma-omics)](https://pypi.org/project/sigma-omics/)
 
 ## Install
 
+Python **3.10 or later**; Python **3.11** was used for release testing.
+
 ```bash
-pip install sigma-omics
+python3.11 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install --prefer-binary "sigma-omics==0.3.2"
+python -c "import sigma_spatial; print(sigma_spatial.__version__)"
 ```
 
-The distribution is named `sigma-omics`; the Python package is
-`sigma_spatial`.
-
-## Inputs
-
-SIGMA uses an `AnnData` object containing:
-
-- a spot-by-metabolite intensity matrix;
-- two-dimensional tissue coordinates;
-- tumor/non-tumor annotations, transferred pathology labels or weak spatial
-  anchors;
-- an optional matched transcriptomic representation.
-
-See the [input format guide](https://github.com/Elsa-bingxue/SIGMA/blob/main/docs/input_format.md)
-for supported keys and loading examples.
+Use `.venv\Scripts\activate` on Windows. The distribution is `sigma-omics`; import
+it as `sigma_spatial`. CPU execution is supported. PyTorch and PyTorch Geometric are
+installed as dependencies. See [installation and upgrades](docs/installation.md).
 
 ## Quick start
 
+Provide an MSI `AnnData` with non-negative intensities in `X`, coordinates in
+`obsm["spatial"]`, and anchors in `obs["sigma_anchor"]` (1: tumour, 0: outside,
+NaN: unknown). The paired workflow also requires an aligned RNA representation in
+`obsm["X_harmony"]`. The same spot IDs must refer to the same positions in both modalities.
+
 ```python
 import scanpy as sc
-from sigma_spatial import run_analysis
+from sigma_spatial import run_sigma, run_downstream_analysis
 
 adata = sc.read_h5ad("sample.h5ad")
-
-result = run_analysis(
+result = run_sigma(
     adata,
+    anchor_key="sigma_anchor",
+    representation_key="X_harmony",
+    distance_mode="continuous",
+    random_state=0,
+)
+result.write_h5ad("sample_sigma.h5ad")
+
+report = run_downstream_analysis(
+    result,
     output_dir="results/sample",
     prefix="sample",
-    workflow="auto",
-    evidence={"same_section_pathology": True},
+    matrix_source="X",
+    selection_mode="standardized",
     report_level="standard",
     random_state=0,
 )
-
-print(result.workflow)
-print(result.downstream.leading_program)
 ```
 
-For an unfamiliar dataset, inspect its declared modalities first:
+This is a new exploratory fit. Reproducing a historical programme such as P3 requires
+its saved ranking and membership table; a newly fitted cluster number is not a fixed
+biological label. The paired model applies its own `log1p` transformation: do not
+silently substitute scaled or already logged data for the documented input.
 
-```python
-from sigma_spatial import inspect_input
+## Workflows and examples
 
-inspect_input(adata).print_report()
-```
+| Input | Entry point | Example |
+|---|---|---|
+| Paired MSI and RNA with anchors | `run_sigma` | [Paired workflow](examples/quickstart.py) |
+| MSI with anchors, without matched RNA | `run_sigma_weak_anchor` | [MSI-only workflow](examples/weak_anchor_usage.py) |
+| Previously fitted probability field | `update_interface_coordinate` | [Coordinate migration](docs/continuous_distance.md) |
+| Fitted coordinate and MSI | `run_downstream_analysis` | [Programme analysis](docs/running.md) |
+| No downloaded dataset | Small generated example | [Synthetic demo](examples/synthetic_demo.py) |
 
-The same standard report is available from the command line:
+Run the generated example from this directory after installing the package:
 
 ```bash
-sigma-omics report sample.h5ad results/sample \
-  --workflow auto \
-  --same-section-pathology \
-  --report-level standard \
-  --seed 0
+python examples/synthetic_demo.py --output results/synthetic_demo
 ```
 
-For repeated or multi-dataset runs, use a portable JSON configuration:
-
-```bash
-sigma-omics run-config examples/configs/direct_pathology.json
-```
-
-The GitHub repository includes configuration templates and thin notebooks
-under `examples/`.
+It exercises fitting, continuous distance, programme discovery and report generation.
+Its small generated dataset is an installation check, not the manuscript benchmark.
+For real data, see [input requirements](docs/input_format.md) and
+[running an analysis](docs/running.md).
 
 ## Outputs
 
-SIGMA returns:
+| Output | Location |
+|---|---|
+| Learned tissue field | `obs["sigma_region_probability"]` |
+| Signed distance and explicit side | `obs["sigma_d_signed"]`, `obs["sigma_inside"]` |
+| Continuous contour segments | `uns["sigma_coordinate"]["segments"]` |
+| Programme members, scores and profiles | `<prefix>_program_*.csv` |
+| Same-side near/far comparisons | `<prefix>_interface_program_statistics.csv` |
+| Maps, profiles and settings | Figure files and `<prefix>_downstream_summary.json` |
 
-- a continuous pathological-region probability field;
-- an inferred interface and signed-distance coordinate;
-- spatial metabolic programs and their distance profiles;
-- ranked interface-associated metabolites;
-- interface influence ranges and directional anisotropy;
-- optional matched-ST validation summaries.
+See the [complete output schema](docs/output_schema.md). Negative distance means
+inside; positive means outside. Distance units follow the supplied coordinates.
+Use `sigma_inside` to assign exact-zero positions to their tissue side.
 
-Core fields are stored in `AnnData`; downstream tables and publication-quality
-figures are written to the selected output directory. See
-[output schema](https://github.com/Elsa-bingxue/SIGMA/blob/main/docs/output_schema.md)
-for the complete list.
+## Changes in 0.3.2
 
-## Supported workflows
+- Adds continuous distance to the interpolated 0.5 contour.
+- Preserves explicit tissue sides at zero distance.
+- Updates coordinate aliases and keeps old columns when migrating a saved field.
+- Marks overlapping near/far groups as unavailable rather than testing the same
+  positions against themselves.
 
-SIGMA supports same-section pathology, joint SM+ST inference, transferred
-pathology and region-defined disease analyses. Spatial metabolomics remains the
-target modality in every workflow. An explicitly anchored SM-only workflow is
-also available for datasets without matched transcriptomics.
+The original trainable model is retained. `distance_mode="legacy"` remains the
+default for historical reproduction; the example above explicitly selects
+`"continuous"`. Recompute rankings, profiles and programmes after changing a saved
+coordinate. See [migration details](docs/continuous_distance.md).
 
-```python
-from sigma_spatial import run_sigma_weak_anchor
+## Data and reproducibility
 
-result = run_sigma_weak_anchor(
-    adata,
-    anchor_key="sigma_anchor",
-    already_log=True,
-    random_state=0,
-)
-```
+Raw datasets and trained models are not distributed in the Python wheel. Data sources
+and preparation notes are in the [reference-data guide](docs/reference_data.md).
+Use explicit matrix sources and preserve the spot order, anchors, seeds and output
+settings. Complete manuscript reproduction also requires the corresponding saved
+rankings, memberships and reference-data files.
 
-## Reproducibility
+The public 0.3.2 wheel passed 93 tests; six tests requiring external historical data
+were skipped. The final package test used existing scientific dependencies; a full
+clean dependency installation was not completed on the release machine.
 
-Every run records its workflow, parameters, matrix source, package version and
-random seed. Reference analyses can additionally use frozen rankings and
-program assignments to reproduce manuscript panels.
+RNA used for fitting or anchor construction supplies cellular context, not an
+independent validation of that fit. Spatial signal extent alone does not establish
+diffusion, metabolic flux or tumour invasion.
 
-Detailed workflow rules, program selection and manuscript reproduction are
-documented in the
-[workflow and reproducibility guide](https://github.com/Elsa-bingxue/SIGMA/blob/main/docs/workflows_and_reproducibility.md).
-
-## Data availability
-
-Reference data are not bundled with the package. The study uses published
-breast, lung, ccRCC, GBM, HCC and Parkinson's disease spatial-omics datasets.
-Download links, source papers, SIGMA sample names and preprocessing notes are
-listed in the
-[reference-data guide](https://github.com/Elsa-bingxue/SIGMA/blob/main/docs/reference_data.md).
-
-## Links
+## Source and support
 
 - [GitHub repository](https://github.com/Elsa-bingxue/SIGMA)
-- [Input format](https://github.com/Elsa-bingxue/SIGMA/blob/main/docs/input_format.md)
-- [Output schema](https://github.com/Elsa-bingxue/SIGMA/blob/main/docs/output_schema.md)
-- [Weak-anchor validation](https://github.com/Elsa-bingxue/SIGMA/blob/main/docs/weak_anchor_validation.md)
-- [Result generation](https://github.com/Elsa-bingxue/SIGMA/blob/main/docs/result_generation.md)
-- [Reference data](https://github.com/Elsa-bingxue/SIGMA/blob/main/docs/reference_data.md)
-- [Issues](https://github.com/Elsa-bingxue/SIGMA/issues)
-
-## Scope
-
-The package contains reusable SIGMA computation and standardized downstream
-reporting. Large reference datasets, manuscript simulations, benchmarks, GO
-enrichment and sample-specific interpretation remain in the analysis
-repository.
+- [PyPI 0.3.2](https://pypi.org/project/sigma-omics/0.3.2/)
+- [Issue tracker](https://github.com/Elsa-bingxue/SIGMA/issues)

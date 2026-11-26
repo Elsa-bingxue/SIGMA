@@ -4,10 +4,15 @@
   "output_dir": "../results/multiomics_inferred",
   "prefix": "sample_joint",
   "workflow": "multiomics_inferred",
-  "evidence": {"matched_st": true},
+  "evidence": {
+    "matched_st": true
+  },
   "report_level": "complete",
   "selection_mode": "lambda_profile",
   "program_selection": "auto",
   "matrix_source": "X",
-  "random_state": 0
+  "random_state": 0,
+  "core_kwargs": {
+    "distance_mode": "continuous"
+  }
 }

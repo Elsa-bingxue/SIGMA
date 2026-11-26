@@ -66,7 +66,7 @@ def run_analysis_config(path):
     if not config.input_h5ad.is_file():
         raise FileNotFoundError(f"input AnnData not found: {config.input_h5ad}")
     import anndata as ad
-    from .api import run_analysis
+    from sigma_spatial import run_analysis
 
     result = run_analysis(
         ad.read_h5ad(config.input_h5ad), config.output_dir, **config.options,

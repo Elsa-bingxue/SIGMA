@@ -12,6 +12,7 @@ from statsmodels.stats.multitest import multipletests
 
 from .interface_metrics import median_neighbor_spacing
 from .preprocessing import resolve_sm_matrix
+from .coordinates import interface_side_masks
 
 
 def _dense(matrix, index):
@@ -32,7 +33,7 @@ def _mz_value(name):
 
 
 def _safe_effect(y, near, far):
-    if near.sum() < 5 or far.sum() < 5:
+    if np.any(near & far) or near.sum() < 5 or far.sum() < 5:
         return np.nan, np.nan
     effect = float(np.nanmean(y[near]) - np.nanmean(y[far]))
     return effect, float(mannwhitneyu(y[near], y[far], alternative="two-sided").pvalue)
@@ -72,6 +73,8 @@ def rank_interface_metabolites(
     """
     if distance_key not in adata.obs or spatial_key not in adata.obsm:
         raise KeyError("SIGMA signed distance and spatial coordinates are required")
+    if not 0 <= near_quantile < far_quantile <= 1:
+        raise ValueError("Require 0 <= near_quantile < far_quantile <= 1")
     matrix, names = resolve_sm_matrix(adata, matrix_source)
     d = adata.obs[distance_key].to_numpy(float)
     xy = np.asarray(adata.obsm[spatial_key], float)
@@ -80,13 +83,17 @@ def rank_interface_metabolites(
     proximity = np.exp(-np.abs(d_spacing))
     if region_key in adata.obs:
         region = adata.obs[region_key].to_numpy(float)
+        side_masks = interface_side_masks(d, region)
     else:
-        region = (d < 0).astype(float)
-    side_masks = {"negative": d < 0, "positive": d > 0}
+        side_masks = interface_side_masks(d)
+        region = np.where(d == 0, np.nan, (d < 0).astype(float))
     windows = {}
     for side, side_mask in side_masks.items():
         finite = side_mask & np.isfinite(d)
         absolute = np.abs(d[finite])
+        if not len(absolute):
+            windows[side] = (np.zeros(len(d), bool), np.zeros(len(d), bool))
+            continue
         near_cut = np.quantile(absolute, near_quantile)
         far_cut = np.quantile(absolute, far_quantile)
         windows[side] = (

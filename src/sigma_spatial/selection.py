@@ -7,6 +7,7 @@ from collections.abc import Mapping
 import numpy as np
 import pandas as pd
 from scipy.stats import mannwhitneyu
+from .coordinates import interface_side_masks
 
 
 def _bh_fdr(p_values: np.ndarray) -> np.ndarray:
@@ -34,12 +35,15 @@ def side_near_far_statistics(
     near_quantile: float = 0.20,
     far_quantile: float = 0.80,
     min_group_size: int = 10,
+    inside_mask: np.ndarray | None = None,
 ) -> pd.DataFrame:
     """Compare near and far values independently on both interface sides.
 
     Negative and positive refer only to signed-distance orientation. Biological
     names such as ``CI / dopamine-low`` and ``Cd / dopamine-high`` are supplied
-    explicitly through ``side_names``.
+    explicitly through ``side_names``. If tied distance quantiles make near
+    and far groups overlap, the comparison is reported as unavailable (NaN);
+    the same observation must not enter both groups of the test.
     """
     if not 0 <= near_quantile < far_quantile <= 1:
         raise ValueError("Require 0 <= near_quantile < far_quantile <= 1")
@@ -48,9 +52,7 @@ def side_near_far_statistics(
     if side_names is not None:
         names.update(side_names)
     rows = []
-    for orientation, side_mask in (
-        ("negative", d < 0), ("positive", d > 0),
-    ):
+    for orientation, side_mask in interface_side_masks(d, inside_mask).items():
         finite_side = side_mask & np.isfinite(d)
         distances = np.abs(d[finite_side])
         if len(distances) < 2 * min_group_size:
@@ -64,7 +66,8 @@ def side_near_far_statistics(
             valid = finite_side & np.isfinite(y)
             near = valid & (np.abs(d) <= near_threshold)
             far = valid & (np.abs(d) >= far_threshold)
-            if near.sum() < min_group_size or far.sum() < min_group_size:
+            n_overlap = int(np.count_nonzero(near & far))
+            if n_overlap or near.sum() < min_group_size or far.sum() < min_group_size:
                 effect = p_value = np.nan
             else:
                 effect = float(y[near].mean() - y[far].mean())
@@ -73,6 +76,7 @@ def side_near_far_statistics(
                 "program": program, "orientation": orientation,
                 "side_name": names[orientation], "near_minus_far": effect,
                 "p_value": p_value, "n_near": int(near.sum()), "n_far": int(far.sum()),
+                "n_overlap": n_overlap,
                 "near_threshold": near_threshold, "far_threshold": far_threshold,
             })
     result = pd.DataFrame(rows)

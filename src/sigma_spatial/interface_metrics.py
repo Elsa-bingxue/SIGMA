@@ -5,6 +5,7 @@ from __future__ import annotations
 import numpy as np
 from scipy.sparse import issparse
 from sklearn.neighbors import NearestNeighbors
+from .coordinates import interface_side_masks
 
 
 def dense_column(matrix, index: int) -> np.ndarray:
@@ -21,6 +22,7 @@ def signed_profile_metrics(
     signed_distance: np.ndarray,
     spacing: float,
     n_bins: int = 40,
+    *, inside_mask=None,
 ) -> dict:
     """Calculate scale-normalized sharpness and side-specific extension.
 
@@ -30,6 +32,8 @@ def signed_profile_metrics(
     y = np.log1p(np.maximum(np.asarray(intensity, float), 0))
     d = np.asarray(signed_distance, float) / spacing
     finite = np.isfinite(y) & np.isfinite(d)
+    sides = interface_side_masks(d, inside_mask)
+    sides = {key: value[finite] for key, value in sides.items()}
     y, d = y[finite], d[finite]
     lo, hi = np.percentile(d, [2, 98])
     edges = np.linspace(lo, hi, n_bins + 1)
@@ -43,8 +47,8 @@ def signed_profile_metrics(
     gradient = np.gradient(scaled, centers)
     sharpness = float(np.max(np.abs(gradient[near]))) if near.any() else float(np.max(np.abs(gradient)))
     extent = np.percentile(np.abs(d), 60)
-    tumor = y[(d < 0) & (np.abs(d) <= extent)]
-    stroma = y[(d > 0) & (np.abs(d) <= extent)]
+    tumor = y[sides['negative'] & (np.abs(d) <= extent)]
+    stroma = y[sides['positive'] & (np.abs(d) <= extent)]
     stromal_extension = float(np.log2((stroma.mean() + 1e-6) / (tumor.mean() + 1e-6)))
     return {"sharpness": sharpness, "stromal_extension": stromal_extension, "profile": scaled, "profile_x": centers}
 

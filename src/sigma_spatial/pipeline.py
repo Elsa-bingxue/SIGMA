@@ -6,6 +6,7 @@ from .preprocessing import get_msi_matrix, msi_to_embedding
 from .graph import gaussian_knn_graph, gaussian_label_smoothing, smooth_embedding
 from .model import SpectralResidualNet
 from .boundary import build_boundary_from_field, signed_distance_from_boundary_points
+from .coordinates import distance_readout
 from .utils import set_seed
 
 
@@ -25,7 +26,12 @@ class SIGMA:
             rna_key="X_harmony", z_dim=32, epochs=1000, lr=1e-3,
             lambda_sup=0.05, beta_rna=0.05, boundary_k=10,
             boundary_mode="legacy", boundary_min_component_size=10,
-            boundary_max_hole_size=10):
+            boundary_max_hole_size=10, distance_mode="legacy", distance_max_edge_factor=1.8):
+        """Fit original SIGMA; choose legacy or continuous contour distance."""
+        if distance_mode not in {"legacy", "continuous"}:
+            raise ValueError("distance_mode must be 'legacy' or 'continuous'")
+        if distance_mode == "continuous" and boundary_mode != "legacy":
+            raise ValueError("Continuous distance requires boundary_mode='legacy' (unmodified threshold mask)")
         set_seed(self.seed)
         if "spatial" not in adata.obsm:
             raise KeyError("adata.obsm['spatial'] is required")
@@ -95,7 +101,8 @@ class SIGMA:
             min_component_size=boundary_min_component_size,
             max_hole_size=boundary_max_hole_size,
         )
-        d_signed = signed_distance_from_boundary_points(xy, boundary, inside)
+        d_signed, segments = distance_readout(xy, p, boundary, inside,
+            mode=distance_mode, max_edge_factor=distance_max_edge_factor)
 
         adata.obsm["X_sigma_msi"] = e
         adata.obsm["X_sigma_gauss"] = e_gauss
@@ -112,6 +119,11 @@ class SIGMA:
             "boundary_mode": boundary_mode,
             "boundary_min_component_size": int(boundary_min_component_size),
             "boundary_max_hole_size": int(boundary_max_hole_size),
+            "distance_mode": distance_mode,
         }
+        if segments is not None:
+            adata.uns["sigma_coordinate"] = dict(mode=distance_mode, level=0.5,
+                max_edge_factor=float(distance_max_edge_factor), segments=segments,
+                units="spatial coordinate units", side_key="sigma_inside")
         self.adata_ = adata
         return self

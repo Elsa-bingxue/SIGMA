@@ -11,6 +11,7 @@ result = run_sigma(
     adata,
     anchor_key="sigma_anchor",
     representation_key="X_harmony",
+    distance_mode="continuous",
     random_state=0,
 )
 result.write_h5ad("sample_sigma.h5ad")

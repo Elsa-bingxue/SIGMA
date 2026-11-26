@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from . import __version__
+
 from dataclasses import dataclass
 import json
 from pathlib import Path
@@ -226,10 +228,12 @@ def run_downstream_analysis(
         )
     analysis.save(output, prefix=prefix)
     distance = adata.obs["sigma_d_signed"].to_numpy(float)
+    inside_mask = adata.obs["sigma_inside"].to_numpy() if "sigma_inside" in adata.obs else None
     statistics = side_near_far_statistics(
         analysis.scores, distance, side_names=side_names,
         near_quantile=near_quantile, far_quantile=far_quantile,
         min_group_size=min_group_size,
+        inside_mask=inside_mask,
     )
     selected = select_bidirectional_programs(
         statistics, fdr_max=fdr_max, effect_min=effect_min
@@ -433,6 +437,7 @@ def run_downstream_analysis(
             signature_scores, distance, side_names=side_names,
             near_quantile=near_quantile, far_quantile=far_quantile,
             min_group_size=min_group_size,
+            inside_mask=inside_mask,
         )
         signature_table.to_csv(output / f"{prefix}_st_interface_statistics.csv", index=False)
         if report_level != "none":
@@ -553,7 +558,7 @@ def run_analysis(
     )
     run_config = {
         "schema_version": 1,
-        "package_version": "0.3.1",
+        "package_version": __version__,
         "workflow": resolved_workflow,
         "core_route": core_route,
         "selection_mode": selection_mode,

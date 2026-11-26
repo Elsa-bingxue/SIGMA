@@ -2,6 +2,7 @@ import hashlib
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from sigma_spatial.boundary import build_boundary_from_binary_mask, build_boundary_from_field
 from sigma_spatial.graph import gaussian_knn_graph, gaussian_label_smoothing, smooth_embedding
@@ -29,24 +30,29 @@ ADDITIONAL_NOTEBOOKS = {
 }
 
 
+@pytest.mark.skipif(not (ORIGINAL.exists()), reason="External manuscript archives are not bundled")
 def test_original_hbc515_notebook_is_unchanged():
     assert hashlib.sha256(ORIGINAL.read_bytes()).hexdigest() == ORIGINAL_SHA256
 
 
+@pytest.mark.skipif(not (ORIGINAL_HBC525.exists()), reason="External manuscript archives are not bundled")
 def test_original_hbc525_notebook_is_unchanged():
     assert hashlib.sha256(ORIGINAL_HBC525.read_bytes()).hexdigest() == ORIGINAL_HBC525_SHA256
 
 
+@pytest.mark.skipif(not (ORIGINAL_HLC091.exists() and ORIGINAL_HLC276.exists()), reason="External manuscript archives are not bundled")
 def test_original_hlc_notebooks_are_unchanged():
     assert hashlib.sha256(ORIGINAL_HLC091.read_bytes()).hexdigest() == ORIGINAL_HLC091_SHA256
     assert hashlib.sha256(ORIGINAL_HLC276.read_bytes()).hexdigest() == ORIGINAL_HLC276_SHA256
 
 
+@pytest.mark.skipif(not (ORIGINAL_CCRCC.exists() and ORIGINAL_GBM.exists()), reason="External manuscript archives are not bundled")
 def test_original_joint_omics_notebooks_are_unchanged():
     assert hashlib.sha256(ORIGINAL_CCRCC.read_bytes()).hexdigest() == ORIGINAL_CCRCC_SHA256
     assert hashlib.sha256(ORIGINAL_GBM.read_bytes()).hexdigest() == ORIGINAL_GBM_SHA256
 
 
+@pytest.mark.skipif(not (all(p.exists() for p in ADDITIONAL_NOTEBOOKS)), reason="External manuscript archives are not bundled")
 def test_additional_dataset_notebooks_are_unchanged():
     for path, expected in ADDITIONAL_NOTEBOOKS.items():
         assert hashlib.sha256(path.read_bytes()).hexdigest() == expected

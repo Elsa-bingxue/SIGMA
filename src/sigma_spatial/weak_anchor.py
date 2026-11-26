@@ -12,6 +12,7 @@ from sklearn.preprocessing import RobustScaler
 from torch_geometric.data import Data
 
 from .boundary import build_boundary_from_field, signed_distance_from_boundary_points
+from .coordinates import distance_readout
 from .graph import gaussian_knn_graph, gaussian_label_smoothing, smooth_embedding
 from .model import SpectralHighPassBlock
 from .preprocessing import get_msi_matrix
@@ -126,6 +127,8 @@ def run_sigma_weak_anchor(
     verbose=False,
     anchor_mode="unspecified_weak_anchor",
     anchor_provenance=None,
+    distance_mode="legacy",
+    distance_max_edge_factor=1.8,
 ):
     """Run the frozen HCC SM-only weak-anchor workflow.
 
@@ -136,6 +139,10 @@ def run_sigma_weak_anchor(
         "unspecified_weak_anchor", "pathology_informed", "cluster_inferred",
         "transferred_annotation",
     }
+    if distance_mode not in {"legacy", "continuous"}:
+        raise ValueError("distance_mode must be 'legacy' or 'continuous'")
+    if distance_mode == "continuous" and boundary_mode != "legacy":
+        raise ValueError("Continuous distance requires an unmodified threshold mask")
     if anchor_mode not in allowed_modes:
         raise ValueError(f"anchor_mode must be one of {sorted(allowed_modes)}")
     _validate_weak_anchor_input(adata, anchor_key, spatial_key)
@@ -209,7 +216,8 @@ def run_sigma_weak_anchor(
     )
     if boundary.sum() < 2:
         raise ValueError("Boundary construction produced fewer than two boundary spots.")
-    signed_distance = signed_distance_from_boundary_points(xy, boundary, inside)
+    signed_distance, segments = distance_readout(xy, probability, boundary, inside,
+        mode=distance_mode, level=boundary_level, max_edge_factor=distance_max_edge_factor)
 
     result.obsm["X_sigma_msi"] = embedding
     result.obsm["X_sigma_gauss"] = gaussian_embedding
@@ -245,9 +253,14 @@ def run_sigma_weak_anchor(
         "boundary_mode": boundary_mode,
         "boundary_min_component_size": int(boundary_min_component_size),
         "boundary_max_hole_size": int(boundary_max_hole_size),
+        "distance_mode": distance_mode,
         "rna_loss": False,
         "loss_history": loss_history,
     }
+    if segments is not None:
+        result.uns["sigma_coordinate"] = dict(mode=distance_mode, level=float(boundary_level),
+            max_edge_factor=float(distance_max_edge_factor), segments=segments,
+            units="spatial coordinate units", side_key="sigma_inside")
     result.uns["sigma_anchor_provenance"] = {
         "mode": anchor_mode,
         "anchor_key": anchor_key,

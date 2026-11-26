@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import argparse
 
-from sigma_spatial import run_analysis_config
+from config_runner import run_analysis_config
 
 
 def main():

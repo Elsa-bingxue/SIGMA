@@ -43,7 +43,7 @@ prefix `<sample>`, its core outputs are:
 | `<sample>_anisotropy.*` | sector-wise influence-range result |
 | `<sample>_downstream_summary.json` | parameters and output status |
 
-If independent matched-ST scores are supplied, the directory also contains
+If matched-ST scores are supplied, the directory also contains
 `<sample>_st_program_associations.csv`, `<sample>_st_program_heatmap.*`,
 `<sample>_st_interface_statistics.csv`, and
 `<sample>_st_interface_lollipop.*`.
@@ -56,3 +56,11 @@ version, and random seed.
 
 Plot generation is controlled by `report_level` and does not alter tables,
 program assignments, representative ranking, or fitted SIGMA fields.
+
+## Distance conventions (0.3.2)
+
+The default reference paths retain `distance_mode="legacy"` to reproduce archived results. Request `distance_mode="continuous"` explicitly for interpolated contour distance. Exact zeros do not encode tissue side; use `sigma_inside`. Without an explicit side label, side-specific analyses exclude zeros and issue a warning.
+
+`update_interface_coordinate` preserves the previous distance/side columns and synchronizes existing `d_signed` / `d_abs` weak-anchor aliases. It marks downstream results as requiring recomputation; existing candidate lists and programmes are not silently recalculated. If tied near/far quantiles produce overlapping groups, `side_near_far_statistics` returns unavailable statistics and records `n_overlap`.
+
+RNA associations are contextual when those RNA data contributed to fitting or anchors. File names containing `validation` do not establish independence. These corrections are included from version 0.3.2; version 0.3.1 does not contain them.

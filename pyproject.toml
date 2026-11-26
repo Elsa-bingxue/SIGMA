@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sigma-omics"
-version = "0.3.1"
+version = "0.3.2"
 description = "Interface-aware spectral graph learning of pathological metabolic transitions"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -47,3 +47,11 @@ sigma-omics = "sigma_spatial.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sigma_spatial"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src", "tests", "docs", "examples", "LICENSE", "README.md", "CHANGELOG.md", "pyproject.toml", "environment.yml"]
+exclude = ["*.executed.ipynb"]
