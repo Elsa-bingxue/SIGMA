@@ -26,4 +26,5 @@ separate from GBM, and their independence as patients is unverified.
 
 These notebooks show section-level programmes. Current ROI contrasts, held-out
 validation and composition-adjusted analyses remain in the manuscript's source
-data and supplementary material. No PD examples are included in this index.
+data and supplementary material. Dataset papers, download archives and sample
+identifiers are listed in [data sources](../docs/reference_data.md).

@@ -67,13 +67,19 @@ file; [notebook instructions](notebooks/README.md) explain the two modes.
 | SMINT P1 · IDH-mutant astrocytoma | 6 | [Open notebook](notebooks/12_SMINT_P1.ipynb) |
 | 248T · glioblastoma | 6 | [Open notebook](notebooks/13_GBM.ipynb) |
 
-## Data and documentation
+## Data sources
 
-- [Data sources](docs/reference_data.md) and [analysis instructions](docs/running.md).
+The [data source table](docs/reference_data.md) links each cancer dataset to its
+original paper and download archive, including Dataverse, OMIX, Figshare,
+BioImage Archive and the relevant processed-data repositories. Each section
+notebook also lists its source.
+
+Raw data and full fitted objects are obtained separately. The included notebook
+files are saved results, not full reproductions of every manuscript panel.
+
+## Documentation
+
+- [Analysis instructions](docs/running.md).
 - [Continuous distance and near/far fixes](docs/continuous_distance.md).
 - [Clean-install test results](docs/installation_test_0.3.2.md).
 - [Issues](https://github.com/Elsa-bingxue/SIGMA/issues).
-
-Raw data and full fitted objects are obtained separately. Notebook previews are
-saved analyses, not complete reproductions of every manuscript panel. Programme
-numbers are local to each fit; RNA used for fitting is contextual evidence.

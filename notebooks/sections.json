@@ -1,6 +1,6 @@
 {
   "BC515_S1": {
-    "title": "BC515 S1 \u00b7 breast cancer",
+    "title": "BC515 S1 · breast cancer",
     "figure": 3,
     "programmes": [
       "P0",
@@ -19,10 +19,15 @@
       "members.csv": "11db5728c3e336459ffd7620f6dde6c777d8a0ad46d84f0720a325e6fcf56daa",
       "profiles.csv": "03fd06ebac17988b466772a1aee31c28c43ed856e3f45ee563af0e207a2c6937"
     },
-    "notebook": "01_BC515_S1.ipynb"
+    "notebook": "01_BC515_S1.ipynb",
+    "data_source": {
+      "paper": "https://doi.org/10.1002/anie.202502028",
+      "data": "https://doi.org/10.7910/DVN/GZFCWC",
+      "citation": "Godfrey et al. (2025)"
+    }
   },
   "BC515_S2": {
-    "title": "BC515 S2 \u00b7 breast cancer",
+    "title": "BC515 S2 · breast cancer",
     "figure": 3,
     "programmes": [
       "P0",
@@ -41,10 +46,17 @@
       "members.csv": "c03c11ff8d27f7eaee32defc565de305b239d954dd86481085648e64e0fc05fb",
       "profiles.csv": "9ac34203a7b3d108a6bb86287e274cf5ead75a8d6a52e65b384a5fd920efe8f6"
     },
-    "notebook": "02_BC515_S2.ipynb"
+    "notebook": "02_BC515_S2.ipynb",
+    "data_source": {
+      "paper": "https://doi.org/10.1002/anie.202502028",
+      "data": "https://doi.org/10.7910/DVN/GZFCWC",
+      "citation": "Godfrey et al. (2025)",
+      "processed_data": "https://zenodo.org/records/17789448",
+      "source_sample": "BC_2_515"
+    }
   },
   "BC525": {
-    "title": "BC525 \u00b7 breast cancer",
+    "title": "BC525 · breast cancer",
     "figure": 3,
     "programmes": [
       "P0",
@@ -63,7 +75,12 @@
       "members.csv": "031c7175ada7ceabe7ccf6a9f9d9759958c50220feaa13806ffff0344613a315",
       "profiles.csv": "c8e277861bcc1b1e3646f49eb6afa8eac22dd480cd44437273f8fc252ae105ea"
     },
-    "notebook": "03_BC525.ipynb"
+    "notebook": "03_BC525.ipynb",
+    "data_source": {
+      "paper": "https://doi.org/10.1002/anie.202502028",
+      "data": "https://doi.org/10.7910/DVN/GZFCWC",
+      "citation": "Godfrey et al. (2025)"
+    }
   },
   "HCC_P1": {
     "title": "HCC P1",
@@ -85,7 +102,12 @@
       "members.csv": "7a810c8878dd4134baa62d441c55bd6f7c650a0846f5a17ebb36f8b59bb384dc",
       "profiles.csv": "9cd3f37a1b1db8d002ce86c4247ec771f457e31e6fe60fe39ac6be99cbd86584"
     },
-    "notebook": "04_HCC_P1.ipynb"
+    "notebook": "04_HCC_P1.ipynb",
+    "data_source": {
+      "paper": "https://doi.org/10.1371/journal.pmed.1004703",
+      "data": "https://ngdc.cncb.ac.cn/omix/release/OMIX006935",
+      "citation": "Luo et al. (2026)"
+    }
   },
   "HCC_P4": {
     "title": "HCC P4",
@@ -107,10 +129,15 @@
       "members.csv": "0d3e4734af5c3ff0905062837ab7261c92816ed0f6238b87dbf258a0a9a38916",
       "profiles.csv": "4400dfa56d0d5ea5abaacee21df0a3d8a5fe19698c1494314a22066105b683a9"
     },
-    "notebook": "05_HCC_P4.ipynb"
+    "notebook": "05_HCC_P4.ipynb",
+    "data_source": {
+      "paper": "https://doi.org/10.1371/journal.pmed.1004703",
+      "data": "https://ngdc.cncb.ac.cn/omix/release/OMIX006935",
+      "citation": "Luo et al. (2026)"
+    }
   },
   "ccRCC_Y27T": {
-    "title": "Y27T \u00b7 clear cell renal carcinoma",
+    "title": "Y27T · clear cell renal carcinoma",
     "figure": 4,
     "programmes": [
       "P0",
@@ -129,10 +156,15 @@
       "members.csv": "4edf9072a960b46c8fcd4e9c81302a643b3de6e14cde9f268118ea5736405cc2",
       "profiles.csv": "0a2c1bf8534d547a4082bd7aadb965b3203f8b6b145b43e5fda5b15ca75060a8"
     },
-    "notebook": "06_ccRCC_Y27T.ipynb"
+    "notebook": "06_ccRCC_Y27T.ipynb",
+    "data_source": {
+      "paper": "https://doi.org/10.1038/s41588-024-01662-5",
+      "data": "https://zenodo.org/records/14986870",
+      "citation": "Hu et al. (2024); processed through SpatialMETA"
+    }
   },
   "CRC_B_2": {
-    "title": "CRC B_2 \u00b7 colorectal cancer",
+    "title": "CRC B_2 · colorectal cancer",
     "figure": 5,
     "programmes": [
       "P0",
@@ -151,10 +183,15 @@
       "members.csv": "36042d6dbd6955ab333036dad97f508a7e0f26ca536f69af583058181c63e4be",
       "profiles.csv": "3454850ad301fc97e055b5e7d2fd52a64766687be2eb8636d5992fd96f83bb16"
     },
-    "notebook": "07_CRC_B_2.ipynb"
+    "notebook": "07_CRC_B_2.ipynb",
+    "data_source": {
+      "paper": "https://doi.org/10.1038/s41592-024-02392-6",
+      "data": "https://doi.org/10.6084/m9.figshare.23599044.v1",
+      "citation": "Nunes et al. (2024)"
+    }
   },
   "CRC_C_2": {
-    "title": "CRC C_2 \u00b7 colorectal cancer",
+    "title": "CRC C_2 · colorectal cancer",
     "figure": 5,
     "programmes": [
       "P0",
@@ -173,10 +210,15 @@
       "members.csv": "05b65df47f8ee89a00e4ead8a00ff8bd9ab9c514a5765ae52dee7fc075deb728",
       "profiles.csv": "aeec7d941e315c15c6b75d20db12805f655ba67a4c415cd15c256ea9c3dc77fd"
     },
-    "notebook": "08_CRC_C_2.ipynb"
+    "notebook": "08_CRC_C_2.ipynb",
+    "data_source": {
+      "paper": "https://doi.org/10.1038/s41592-024-02392-6",
+      "data": "https://doi.org/10.6084/m9.figshare.23599044.v1",
+      "citation": "Nunes et al. (2024)"
+    }
   },
   "LC091": {
-    "title": "LC091 \u00b7 lung cancer",
+    "title": "LC091 · lung cancer",
     "figure": 5,
     "programmes": [
       "P0",
@@ -195,10 +237,15 @@
       "members.csv": "f7d410b419be3d4f23239494df44e38c4ec71933f28ecd03732ceec4fb7f5ae4",
       "profiles.csv": "af80de7d707002ddffb710d7de1ff19c6daf14769d893b39172f96d3c7465d63"
     },
-    "notebook": "09_LC091.ipynb"
+    "notebook": "09_LC091.ipynb",
+    "data_source": {
+      "paper": "https://doi.org/10.1002/anie.202502028",
+      "data": "https://doi.org/10.7910/DVN/GZFCWC",
+      "citation": "Godfrey et al. (2025)"
+    }
   },
   "LC276": {
-    "title": "LC276 \u00b7 lung cancer",
+    "title": "LC276 · lung cancer",
     "figure": 5,
     "programmes": [
       "P0",
@@ -217,10 +264,15 @@
       "members.csv": "777f3dae9029f5a7a716abcb2963d0d24276904450b2fb92ab19f1a161216c02",
       "profiles.csv": "85ac3dda2a6043cca44ceee0f85654de25f0b4e8091c0ca91490c0e89144e22d"
     },
-    "notebook": "10_LC276.ipynb"
+    "notebook": "10_LC276.ipynb",
+    "data_source": {
+      "paper": "https://doi.org/10.1002/anie.202502028",
+      "data": "https://doi.org/10.7910/DVN/GZFCWC",
+      "citation": "Godfrey et al. (2025)"
+    }
   },
   "Glioma574": {
-    "title": "Glioma574 \u00b7 IDH-mutant cohort",
+    "title": "Glioma574 · IDH-mutant cohort",
     "figure": 6,
     "programmes": [
       "P0",
@@ -239,10 +291,15 @@
       "members.csv": "ae89d06603e58ccb3e463fffffb48cf1c4ce6f44e54b96ba835de9b20cc56bae",
       "profiles.csv": "5f601cee4edd15d0344f07a9878c0d0739a6951430565a4dc9137b662b2dbb71"
     },
-    "notebook": "11_Glioma574.ipynb"
+    "notebook": "11_Glioma574.ipynb",
+    "data_source": {
+      "paper": "https://doi.org/10.1038/s41592-026-03140-8",
+      "data": "https://zenodo.org/records/18282678",
+      "citation": "SpaMTP processed glioma object; Causer et al. (2026)"
+    }
   },
   "SMINT_P1": {
-    "title": "SMINT P1 \u00b7 IDH-mutant astrocytoma",
+    "title": "SMINT P1 · IDH-mutant astrocytoma",
     "figure": 6,
     "programmes": [
       "P0",
@@ -261,10 +318,15 @@
       "members.csv": "0bc91c9d34782320a2a0ce5d5c003da6ed17e453b01b3d4554004ed2b627c889",
       "profiles.csv": "11b045a41efeda171336bc8f6f69a42fdf3a1ae9904907832d795ae73ffaa103"
     },
-    "notebook": "12_SMINT_P1.ipynb"
+    "notebook": "12_SMINT_P1.ipynb",
+    "data_source": {
+      "paper": "https://doi.org/10.1016/j.crmeth.2026.101306",
+      "data": "https://www.ebi.ac.uk/biostudies/bioimages/studies/S-BIAD1426",
+      "citation": "Kriel et al. (2026)"
+    }
   },
   "GBM": {
-    "title": "248T \u00b7 glioblastoma",
+    "title": "248T · glioblastoma",
     "figure": 6,
     "programmes": [
       "P0",
@@ -283,6 +345,11 @@
       "members.csv": "8c689aca9de875ddc79022fc36272f006d59677f6252c296fe2184b3172ff32c",
       "profiles.csv": "27a433f15b76f20fd5fa9a886887ec145204621bb9453beeca8d980f7f825d1d"
     },
-    "notebook": "13_GBM.ipynb"
+    "notebook": "13_GBM.ipynb",
+    "data_source": {
+      "paper": "https://doi.org/10.1016/j.ccell.2022.05.009",
+      "data": "https://doi.org/10.5061/dryad.h70rxwdmj",
+      "citation": "Ravi et al. (2022); processed through SpatialMETA"
+    }
   }
 }
