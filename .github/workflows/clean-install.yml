@@ -1,0 +1,95 @@
+name: Clean installation
+
+on:
+  push:
+    branches: [verify/clean-install-032]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: ${{ matrix.os }} / ${{ matrix.source }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15-intel]
+        source: [pypi, github]
+    env:
+      PYTHONNOUSERSITE: "1"
+      PIP_NO_CACHE_DIR: "1"
+      MPLBACKEND: Agg
+      OMP_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      INSTALL_SOURCE: ${{ matrix.source }}
+      TARGET_SHA: 782407119f0a725d1bfdcc0ae60d22bb005d5f94
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Create an empty environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p verification
+          python -m venv "$RUNNER_TEMP/sigma-clean"
+          echo "$RUNNER_TEMP/sigma-clean/bin" >> "$GITHUB_PATH"
+          cat "$RUNNER_TEMP/sigma-clean/pyvenv.cfg" | tee verification/pyvenv.cfg
+          "$RUNNER_TEMP/sigma-clean/bin/python" -m pip list --format=json > verification/packages_before.json
+          df -h . > verification/disk_before.txt
+      - name: Install PyPI release
+        if: matrix.source == 'pypi'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip 2>&1 | tee verification/pip_upgrade.log
+          python -m pip install --prefer-binary --report verification/install_report.json "sigma-omics==0.3.2" 2>&1 | tee verification/install.log
+      - name: Install GitHub source
+        if: matrix.source == 'github'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone https://github.com/Elsa-bingxue/SIGMA.git "$RUNNER_TEMP/sigma-source"
+          git -C "$RUNNER_TEMP/sigma-source" checkout "$TARGET_SHA"
+          python -m pip install --upgrade pip 2>&1 | tee verification/pip_upgrade.log
+          python -m pip install --prefer-binary --report verification/install_report.json -e "$RUNNER_TEMP/sigma-source[dev]" 2>&1 | tee verification/install.log
+      - name: Check installed dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip check 2>&1 | tee verification/pip_check.txt
+          python -m pip freeze > verification/requirements-resolved.txt
+          python -m pip inspect > verification/pip_inspect.json
+      - name: Run README example
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset PYTHONPATH
+          python examples/synthetic_demo.py --output verification/demo 2>&1 | tee verification/demo.log
+      - name: Verify default workflow and edge cases
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset PYTHONPATH
+          python scripts/verify_installation.py --output verification 2>&1 | tee verification/verification.log
+      - name: Test installed package
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install pytest > verification/pytest_install.log 2>&1
+          mkdir -p "$RUNNER_TEMP/sigma-checks"
+          cp tests/test_continuous_coordinates.py tests/test_coordinate_release.py tests/test_programs.py "$RUNNER_TEMP/sigma-checks/"
+          cd "$RUNNER_TEMP/sigma-checks"
+          unset PYTHONPATH
+          python -m pytest -q --junitxml="$GITHUB_WORKSPACE/verification/pytest.xml" 2>&1 | tee "$GITHUB_WORKSPACE/verification/pytest.log"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: clean-install-${{ matrix.os }}-${{ matrix.source }}
+          path: verification/
+          retention-days: 30
