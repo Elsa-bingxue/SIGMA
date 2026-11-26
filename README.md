@@ -1,37 +1,45 @@
 # SIGMA
 
-SIGMA identifies metabolic programmes around tumour–stroma interfaces by integrating
-spatial metabolomics, tissue coordinates and pathological or weak anchors. Matched
-spatial RNA provides an auxiliary representation when available.
-
-The analysis asks where a programme changes, how far its signal extends, and which
-parts of an interface differ. The main outputs are a learned tissue field, a signed
-distance coordinate, ranked ions and spatial programmes with distance profiles.
+SIGMA identifies metabolic programmes around tumour–stroma interfaces. It uses
+spatial MSI, tissue coordinates and pathological or weak anchors; matched RNA is
+included in the paired workflow. Ions are grouped by their distance profiles to
+show where metabolic signals change and how far they extend within the tissue.
 
 [![PyPI](https://img.shields.io/pypi/v/sigma-omics)](https://pypi.org/project/sigma-omics/)
 
 ## Install
 
-Python **3.10 or later**; Python **3.11** was used for release testing.
+Use Python 3.11 in a separate environment:
 
 ```bash
 python3.11 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install --prefer-binary "sigma-omics==0.3.2"
+python -m pip check
 python -c "import sigma_spatial; print(sigma_spatial.__version__)"
 ```
 
-Use `.venv\Scripts\activate` on Windows. The distribution is `sigma-omics`; import
-it as `sigma_spatial`. CPU execution is supported. PyTorch and PyTorch Geometric are
-installed as dependencies. See [installation and upgrades](docs/installation.md).
+On Windows, activate with `.venv\Scripts\activate`. The distribution is
+`sigma-omics`; the import name is `sigma_spatial`. CPU execution is supported.
+See [installation notes](docs/installation.md) for upgrades and source installation.
 
-## Quick start
+## Inputs
 
-Provide an MSI `AnnData` with non-negative intensities in `X`, coordinates in
-`obsm["spatial"]`, and anchors in `obs["sigma_anchor"]` (1: tumour, 0: outside,
-NaN: unknown). The paired workflow also requires an aligned RNA representation in
-`obsm["X_harmony"]`. The same spot IDs must refer to the same positions in both modalities.
+Prepare an `AnnData` object with the following fields:
+
+| Field | Contents |
+|---|---|
+| `X` | Non-negative MSI intensities, before log transformation |
+| `obsm["spatial"]` | Two-dimensional tissue coordinates |
+| `obs["sigma_anchor"]` | 1: tumour; 0: outside; NaN: unlabelled |
+| `obsm["X_harmony"]` | Aligned RNA representation for the paired workflow |
+
+Registration and RNA preprocessing are performed before running SIGMA. Rows must
+refer to the same tissue positions across modalities. The paired model applies
+`log1p` to the MSI matrix. See [input format](docs/input_format.md).
+
+## Run
 
 ```python
 import scanpy as sc
@@ -58,78 +66,57 @@ report = run_downstream_analysis(
 )
 ```
 
-This is a new exploratory fit. Reproducing a historical programme such as P3 requires
-its saved ranking and membership table; a newly fitted cluster number is not a fixed
-biological label. The paired model applies its own `log1p` transformation: do not
-silently substitute scaled or already logged data for the documented input.
+The first call fits the interface. The second ranks ions, groups their distance
+profiles and writes programme maps, profiles, membership tables and same-side
+near/far comparisons. Parameters and output status are saved with the results.
+See [running an analysis](docs/running.md) and [output fields](docs/output_schema.md).
 
-## Workflows and examples
+## Examples
 
-| Input | Entry point | Example |
-|---|---|---|
-| Paired MSI and RNA with anchors | `run_sigma` | [Paired workflow](examples/quickstart.py) |
-| MSI with anchors, without matched RNA | `run_sigma_weak_anchor` | [MSI-only workflow](examples/weak_anchor_usage.py) |
-| Previously fitted probability field | `update_interface_coordinate` | [Coordinate migration](docs/continuous_distance.md) |
-| Fitted coordinate and MSI | `run_downstream_analysis` | [Programme analysis](docs/running.md) |
-| No downloaded dataset | Small generated example | [Synthetic demo](examples/synthetic_demo.py) |
+| Data | Example |
+|---|---|
+| Generated data, no download required | [Synthetic example](examples/synthetic_demo.py) |
+| Paired MSI and RNA | [Paired analysis](examples/quickstart.py) |
+| MSI with anchors, without matched RNA | [MSI-only analysis](examples/weak_anchor_usage.py) |
+| A saved SIGMA probability field | [Update the distance coordinate](docs/continuous_distance.md) |
 
-Run the generated example from this directory after installing the package:
+After downloading or cloning this repository, run the small example:
 
 ```bash
 python examples/synthetic_demo.py --output results/synthetic_demo
 ```
 
-It exercises fitting, continuous distance, programme discovery and report generation.
-Its small generated dataset is an installation check, not the manuscript benchmark.
-For real data, see [input requirements](docs/input_format.md) and
-[running an analysis](docs/running.md).
+It uses 400 generated spots and 80 ions to check fitting and report generation.
+The full example and the default 1,000-epoch workflow are tested separately.
+See the [0.3.2 installation results](docs/installation_test_0.3.2.md).
 
-## Outputs
+## Continuous distance and near/far comparisons
 
-| Output | Location |
-|---|---|
-| Learned tissue field | `obs["sigma_region_probability"]` |
-| Signed distance and explicit side | `obs["sigma_d_signed"]`, `obs["sigma_inside"]` |
-| Continuous contour segments | `uns["sigma_coordinate"]["segments"]` |
-| Programme members, scores and profiles | `<prefix>_program_*.csv` |
-| Same-side near/far comparisons | `<prefix>_interface_program_statistics.csv` |
-| Maps, profiles and settings | Figure files and `<prefix>_downstream_summary.json` |
+Version 0.3.2 adds distance to the interpolated 0.5 contour. Select it with
+`distance_mode="continuous"`; the default remains `"legacy"` for earlier analyses.
+Negative distance denotes the inside and positive distance the outside. Units
+follow the supplied coordinates. Exact-zero positions retain their side through
+`obs["sigma_inside"]`.
 
-See the [complete output schema](docs/output_schema.md). Negative distance means
-inside; positive means outside. Distance units follow the supplied coordinates.
-Use `sigma_inside` to assign exact-zero positions to their tissue side.
+Near/far comparisons are made within each side. If tied thresholds produce
+overlapping groups, the effect, P value and FDR are recorded as unavailable.
+Updating a saved coordinate preserves the earlier columns; rankings, profiles
+and programme assignments must then be recalculated. See the
+[migration guide](docs/continuous_distance.md) and [change log](CHANGELOG.md).
 
-## Changes in 0.3.2
+## Data and reproduction
 
-- Adds continuous distance to the interpolated 0.5 contour.
-- Preserves explicit tissue sides at zero distance.
-- Updates coordinate aliases and keeps old columns when migrating a saved field.
-- Marks overlapping near/far groups as unavailable rather than testing the same
-  positions against themselves.
+[Data sources](docs/reference_data.md) lists the cancer datasets used in the study.
+Raw data and trained models are obtained separately. To reproduce a historical
+programme such as P3, use its saved ranking and membership table. New fits can
+produce different cluster labels.
 
-The original trainable model is retained. `distance_mode="legacy"` remains the
-default for historical reproduction; the example above explicitly selects
-`"continuous"`. Recompute rankings, profiles and programmes after changing a saved
-coordinate. See [migration details](docs/continuous_distance.md).
+RNA used for fitting provides cellular context. Independent tissue measurements
+are needed to validate biological interpretations. Spatial signal extent is not
+a measurement of diffusion or metabolic flux.
 
-## Data and reproducibility
+## Links
 
-Raw datasets and trained models are not distributed in the Python wheel. Data sources
-and preparation notes are in the [reference-data guide](docs/reference_data.md).
-Use explicit matrix sources and preserve the spot order, anchors, seeds and output
-settings. Complete manuscript reproduction also requires the corresponding saved
-rankings, memberships and reference-data files.
-
-The public 0.3.2 wheel passed 93 tests; six tests requiring external historical data
-were skipped. The final package test used existing scientific dependencies; a full
-clean dependency installation was not completed on the release machine.
-
-RNA used for fitting or anchor construction supplies cellular context, not an
-independent validation of that fit. Spatial signal extent alone does not establish
-diffusion, metabolic flux or tumour invasion.
-
-## Source and support
-
-- [GitHub repository](https://github.com/Elsa-bingxue/SIGMA)
-- [PyPI 0.3.2](https://pypi.org/project/sigma-omics/0.3.2/)
-- [Issue tracker](https://github.com/Elsa-bingxue/SIGMA/issues)
+- [PyPI release](https://pypi.org/project/sigma-omics/0.3.2/)
+- [Workflow and reproduction notes](docs/workflows_and_reproducibility.md)
+- [Issues](https://github.com/Elsa-bingxue/SIGMA/issues)
