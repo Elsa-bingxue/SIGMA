@@ -1,0 +1,288 @@
+{
+  "BC515_S1": {
+    "title": "BC515 S1 \u00b7 breast cancer",
+    "figure": 3,
+    "programmes": [
+      "P0",
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "n_positions": 3508,
+    "n_members": 300,
+    "distance_label": "Pathology-reference distance",
+    "distance_units": "Spot spacings",
+    "note": "Native programmes from Figure 3, shown against its common pathology-reference coordinate. This distance panel is not a new SIGMA boundary fit. S1 and S2 belong to the same case.",
+    "matrix_source": "msi_uns",
+    "sha256": {
+      "display.npz": "34fb5b45a661229e02da788f5f0f78779856f16ade850cd79df1a30d2d3a8e40",
+      "members.csv": "11db5728c3e336459ffd7620f6dde6c777d8a0ad46d84f0720a325e6fcf56daa",
+      "profiles.csv": "03fd06ebac17988b466772a1aee31c28c43ed856e3f45ee563af0e207a2c6937"
+    },
+    "notebook": "01_BC515_S1.ipynb"
+  },
+  "BC515_S2": {
+    "title": "BC515 S2 \u00b7 breast cancer",
+    "figure": 3,
+    "programmes": [
+      "P0",
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "n_positions": 1926,
+    "n_members": 42,
+    "distance_label": "Pathology-reference distance",
+    "distance_units": "Spot spacings",
+    "note": "Native programmes from Figure 3, shown against its common pathology-reference coordinate. This distance panel is not a new SIGMA boundary fit. S1 and S2 belong to the same case.",
+    "matrix_source": "msi_uns",
+    "sha256": {
+      "display.npz": "726aa11a43f27efcce640863032d5ffd7b8cfb03d89e6956f86166cfeb2c4c93",
+      "members.csv": "c03c11ff8d27f7eaee32defc565de305b239d954dd86481085648e64e0fc05fb",
+      "profiles.csv": "9ac34203a7b3d108a6bb86287e274cf5ead75a8d6a52e65b384a5fd920efe8f6"
+    },
+    "notebook": "02_BC515_S2.ipynb"
+  },
+  "BC525": {
+    "title": "BC525 \u00b7 breast cancer",
+    "figure": 3,
+    "programmes": [
+      "P0",
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "n_positions": 3270,
+    "n_members": 300,
+    "distance_label": "Pathology-reference distance",
+    "distance_units": "Spot spacings",
+    "note": "Native programmes from Figure 3, shown against its common pathology-reference coordinate. This distance panel is not a new SIGMA boundary fit. S1 and S2 belong to the same case.",
+    "matrix_source": "msi_uns",
+    "sha256": {
+      "display.npz": "ba442d12710b09f101492fc063c9f3dadffa457da93b6059844897fd40525b8c",
+      "members.csv": "031c7175ada7ceabe7ccf6a9f9d9759958c50220feaa13806ffff0344613a315",
+      "profiles.csv": "c8e277861bcc1b1e3646f49eb6afa8eac22dd480cd44437273f8fc252ae105ea"
+    },
+    "notebook": "03_BC525.ipynb"
+  },
+  "HCC_P1": {
+    "title": "HCC P1",
+    "figure": 4,
+    "programmes": [
+      "P0",
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "n_positions": 4409,
+    "n_members": 19,
+    "distance_label": "Saved SIGMA distance",
+    "distance_units": "Input coordinate units",
+    "note": "Archived reference programmes. The original distance is retained for viewing; the optional analysis cell below updates the coordinate and recalculates programmes. These maps do not reproduce the full current figure or its held-out validation.",
+    "matrix_source": "X",
+    "sha256": {
+      "display.npz": "cd87bfd9d520275aab98087fb5bf3abec52c4154d7667d0c2f2d3e2581d5096f",
+      "members.csv": "7a810c8878dd4134baa62d441c55bd6f7c650a0846f5a17ebb36f8b59bb384dc",
+      "profiles.csv": "9cd3f37a1b1db8d002ce86c4247ec771f457e31e6fe60fe39ac6be99cbd86584"
+    },
+    "notebook": "04_HCC_P1.ipynb"
+  },
+  "HCC_P4": {
+    "title": "HCC P4",
+    "figure": 4,
+    "programmes": [
+      "P0",
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "n_positions": 3531,
+    "n_members": 6,
+    "distance_label": "Saved SIGMA distance",
+    "distance_units": "Input coordinate units",
+    "note": "Archived reference programmes. The original distance is retained for viewing; the optional analysis cell below updates the coordinate and recalculates programmes. These maps do not reproduce the full current figure or its held-out validation.",
+    "matrix_source": "X",
+    "sha256": {
+      "display.npz": "889f75a07a15f84f29ab3916019dbb2bb728b07e04a80d050b56297842f114a7",
+      "members.csv": "0d3e4734af5c3ff0905062837ab7261c92816ed0f6238b87dbf258a0a9a38916",
+      "profiles.csv": "4400dfa56d0d5ea5abaacee21df0a3d8a5fe19698c1494314a22066105b683a9"
+    },
+    "notebook": "05_HCC_P4.ipynb"
+  },
+  "ccRCC_Y27T": {
+    "title": "Y27T \u00b7 clear cell renal carcinoma",
+    "figure": 4,
+    "programmes": [
+      "P0",
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "n_positions": 3023,
+    "n_members": 23,
+    "distance_label": "Saved SIGMA distance",
+    "distance_units": "Input coordinate units",
+    "note": "Archived reference programmes. The original distance is retained for viewing; the optional analysis cell below updates the coordinate and recalculates programmes. These maps do not reproduce the full current figure or its held-out validation.",
+    "matrix_source": "X",
+    "sha256": {
+      "display.npz": "5c34b3ebb5c93b6731a93b3d0c94bcc3c88a8a35fe3a64e1f1f8fcc265f619fa",
+      "members.csv": "4edf9072a960b46c8fcd4e9c81302a643b3de6e14cde9f268118ea5736405cc2",
+      "profiles.csv": "0a2c1bf8534d547a4082bd7aadb965b3203f8b6b145b43e5fda5b15ca75060a8"
+    },
+    "notebook": "06_ccRCC_Y27T.ipynb"
+  },
+  "CRC_B_2": {
+    "title": "CRC B_2 \u00b7 colorectal cancer",
+    "figure": 5,
+    "programmes": [
+      "P0",
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "n_positions": 2013,
+    "n_members": 27,
+    "distance_label": "Saved SIGMA distance",
+    "distance_units": "Input coordinate units",
+    "note": "Archived section programmes; distance is retained as saved. CRC B_2/C_2 are regions, not a verified patient count. Glioma574 and SMINT P1 are kept separate from GBM, and their independence as patients is unverified. Current composition-adjusted results are in the manuscript source tables.",
+    "matrix_source": "X",
+    "sha256": {
+      "display.npz": "74bb9aded9afc7b9f73286409756fe54d38b8b60d876f19510ee07e47f5dbce7",
+      "members.csv": "36042d6dbd6955ab333036dad97f508a7e0f26ca536f69af583058181c63e4be",
+      "profiles.csv": "3454850ad301fc97e055b5e7d2fd52a64766687be2eb8636d5992fd96f83bb16"
+    },
+    "notebook": "07_CRC_B_2.ipynb"
+  },
+  "CRC_C_2": {
+    "title": "CRC C_2 \u00b7 colorectal cancer",
+    "figure": 5,
+    "programmes": [
+      "P0",
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "n_positions": 2681,
+    "n_members": 32,
+    "distance_label": "Saved SIGMA distance",
+    "distance_units": "Input coordinate units",
+    "note": "Archived section programmes; distance is retained as saved. CRC B_2/C_2 are regions, not a verified patient count. Glioma574 and SMINT P1 are kept separate from GBM, and their independence as patients is unverified. Current composition-adjusted results are in the manuscript source tables.",
+    "matrix_source": "X",
+    "sha256": {
+      "display.npz": "12bd06b1d0183b41af2d012e2e5536440d2d9571423434bfc6324b28031cc113",
+      "members.csv": "05b65df47f8ee89a00e4ead8a00ff8bd9ab9c514a5765ae52dee7fc075deb728",
+      "profiles.csv": "aeec7d941e315c15c6b75d20db12805f655ba67a4c415cd15c256ea9c3dc77fd"
+    },
+    "notebook": "08_CRC_C_2.ipynb"
+  },
+  "LC091": {
+    "title": "LC091 \u00b7 lung cancer",
+    "figure": 5,
+    "programmes": [
+      "P0",
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "n_positions": 2141,
+    "n_members": 71,
+    "distance_label": "Continuous SIGMA distance",
+    "distance_units": "Spot spacings",
+    "note": "Saved full-section high-pass-on fit from the lung ablation study. Programme labels belong to this fit. The preview is descriptive, not a held-out score.",
+    "matrix_source": "msi_uns",
+    "sha256": {
+      "display.npz": "b2851b113e211a95dbd59247443bac006cc85ec71c87f867e268e1a206e75bd6",
+      "members.csv": "f7d410b419be3d4f23239494df44e38c4ec71933f28ecd03732ceec4fb7f5ae4",
+      "profiles.csv": "af80de7d707002ddffb710d7de1ff19c6daf14769d893b39172f96d3c7465d63"
+    },
+    "notebook": "09_LC091.ipynb"
+  },
+  "LC276": {
+    "title": "LC276 \u00b7 lung cancer",
+    "figure": 5,
+    "programmes": [
+      "P0",
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "n_positions": 1868,
+    "n_members": 63,
+    "distance_label": "Continuous SIGMA distance",
+    "distance_units": "Spot spacings",
+    "note": "Saved full-section high-pass-on fit from the lung ablation study. Programme labels belong to this fit. The preview is descriptive, not a held-out score.",
+    "matrix_source": "msi_uns",
+    "sha256": {
+      "display.npz": "343a9a36ff82c507fc881d973e215c278bd74d0f140a6603127e5cec052a65f0",
+      "members.csv": "777f3dae9029f5a7a716abcb2963d0d24276904450b2fb92ab19f1a161216c02",
+      "profiles.csv": "85ac3dda2a6043cca44ceee0f85654de25f0b4e8091c0ca91490c0e89144e22d"
+    },
+    "notebook": "10_LC276.ipynb"
+  },
+  "Glioma574": {
+    "title": "Glioma574 \u00b7 IDH-mutant cohort",
+    "figure": 6,
+    "programmes": [
+      "P0",
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "n_positions": 13322,
+    "n_members": 100,
+    "distance_label": "Saved SIGMA distance",
+    "distance_units": "Input coordinate units",
+    "note": "Archived section programmes; distance is retained as saved. CRC B_2/C_2 are regions, not a verified patient count. Glioma574 and SMINT P1 are kept separate from GBM, and their independence as patients is unverified. Current composition-adjusted results are in the manuscript source tables.",
+    "matrix_source": "X",
+    "sha256": {
+      "display.npz": "e1d3ec4536537dc9e0c0d13e530745658919d0684041031c15b74f8916ff5c6d",
+      "members.csv": "ae89d06603e58ccb3e463fffffb48cf1c4ce6f44e54b96ba835de9b20cc56bae",
+      "profiles.csv": "5f601cee4edd15d0344f07a9878c0d0739a6951430565a4dc9137b662b2dbb71"
+    },
+    "notebook": "11_Glioma574.ipynb"
+  },
+  "SMINT_P1": {
+    "title": "SMINT P1 \u00b7 IDH-mutant astrocytoma",
+    "figure": 6,
+    "programmes": [
+      "P0",
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "n_positions": 12969,
+    "n_members": 49,
+    "distance_label": "Saved SIGMA distance",
+    "distance_units": "Input coordinate units",
+    "note": "Archived section programmes; distance is retained as saved. CRC B_2/C_2 are regions, not a verified patient count. Glioma574 and SMINT P1 are kept separate from GBM, and their independence as patients is unverified. Current composition-adjusted results are in the manuscript source tables.",
+    "matrix_source": "X",
+    "sha256": {
+      "display.npz": "3affd273c34f7441da0574f7c6cbe2c10c74f9475e0472b08dfb493f0622bea3",
+      "members.csv": "0bc91c9d34782320a2a0ce5d5c003da6ed17e453b01b3d4554004ed2b627c889",
+      "profiles.csv": "11b045a41efeda171336bc8f6f69a42fdf3a1ae9904907832d795ae73ffaa103"
+    },
+    "notebook": "12_SMINT_P1.ipynb"
+  },
+  "GBM": {
+    "title": "248T \u00b7 glioblastoma",
+    "figure": 6,
+    "programmes": [
+      "P0",
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "n_positions": 2980,
+    "n_members": 105,
+    "distance_label": "Saved SIGMA distance",
+    "distance_units": "Input coordinate units",
+    "note": "Archived reference programmes. The original distance is retained for viewing; the optional analysis cell below updates the coordinate and recalculates programmes. These maps do not reproduce the full current figure or its held-out validation.",
+    "matrix_source": "X",
+    "sha256": {
+      "display.npz": "62c7458737067014a19b6214f6cba63ada68735414be0bdcdd51c1e0c3383169",
+      "members.csv": "8c689aca9de875ddc79022fc36272f006d59677f6252c296fe2184b3172ff32c",
+      "profiles.csv": "27a433f15b76f20fd5fa9a886887ec145204621bb9453beeca8d980f7f825d1d"
+    },
+    "notebook": "13_GBM.ipynb"
+  }
+}

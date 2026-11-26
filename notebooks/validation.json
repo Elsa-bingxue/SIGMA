@@ -1,0 +1,95 @@
+{
+  "date": "2026-11-26",
+  "mode": "Saved-result viewing",
+  "jupyter_kernel_python": "3.8.8",
+  "optional_full_data_reanalysis": "Not executed in this notebook check; package 0.3.2 has separate Python 3.11 installation tests.",
+  "results": [
+    {
+      "notebook": "01_BC515_S1.ipynb",
+      "status": "passed",
+      "image_outputs": 1,
+      "mode": "saved result viewing; optional full-data analysis disabled"
+    },
+    {
+      "notebook": "02_BC515_S2.ipynb",
+      "status": "passed",
+      "image_outputs": 1,
+      "mode": "saved result viewing; optional full-data analysis disabled"
+    },
+    {
+      "notebook": "03_BC525.ipynb",
+      "status": "passed",
+      "image_outputs": 1,
+      "mode": "saved result viewing; optional full-data analysis disabled"
+    },
+    {
+      "notebook": "04_HCC_P1.ipynb",
+      "status": "passed",
+      "image_outputs": 1,
+      "mode": "saved result viewing; optional full-data analysis disabled"
+    },
+    {
+      "notebook": "05_HCC_P4.ipynb",
+      "status": "passed",
+      "image_outputs": 1,
+      "mode": "saved result viewing; optional full-data analysis disabled"
+    },
+    {
+      "notebook": "06_ccRCC_Y27T.ipynb",
+      "status": "passed",
+      "image_outputs": 1,
+      "mode": "saved result viewing; optional full-data analysis disabled"
+    },
+    {
+      "notebook": "07_CRC_B_2.ipynb",
+      "status": "passed",
+      "image_outputs": 1,
+      "mode": "saved result viewing; optional full-data analysis disabled"
+    },
+    {
+      "notebook": "08_CRC_C_2.ipynb",
+      "status": "passed",
+      "image_outputs": 1,
+      "mode": "saved result viewing; optional full-data analysis disabled"
+    },
+    {
+      "notebook": "09_LC091.ipynb",
+      "status": "passed",
+      "image_outputs": 1,
+      "mode": "saved result viewing; optional full-data analysis disabled"
+    },
+    {
+      "notebook": "10_LC276.ipynb",
+      "status": "passed",
+      "image_outputs": 1,
+      "mode": "saved result viewing; optional full-data analysis disabled"
+    },
+    {
+      "notebook": "11_Glioma574.ipynb",
+      "status": "passed",
+      "image_outputs": 1,
+      "mode": "saved result viewing; optional full-data analysis disabled"
+    },
+    {
+      "notebook": "12_SMINT_P1.ipynb",
+      "status": "passed",
+      "image_outputs": 1,
+      "mode": "saved result viewing; optional full-data analysis disabled"
+    },
+    {
+      "notebook": "13_GBM.ipynb",
+      "status": "passed",
+      "image_outputs": 1,
+      "mode": "saved result viewing; optional full-data analysis disabled"
+    }
+  ],
+  "python_3_11_plot_check": {
+    "version": "3.11.13",
+    "sections_passed": 13,
+    "checks": [
+      "data loading",
+      "all spot counts retained in distance bins",
+      "plot canvas rendering"
+    ]
+  }
+}
